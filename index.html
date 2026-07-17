@@ -1,0 +1,327 @@
+<!-- build: 2026-07-17-1 -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartGate Profitcenter — Riedel Classics</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg:        #0d0f14;
+    --surface:   #141820;
+    --surface2:  #1c2230;
+    --border:    #252d3d;
+    --accent:    #3b82f6;
+    --accent2:   #1d4ed8;
+    --green:     #22c55e;
+    --yellow:    #f59e0b;
+    --red:       #ef4444;
+    --text:      #e8eaf0;
+    --muted:     #6b7a99;
+    --mono:      'JetBrains Mono', monospace;
+    --sans:      'Inter', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 56px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; letter-spacing: -0.3px; }
+  .logo-icon { width: 30px; height: 30px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .logo span { color: var(--muted); font-weight: 400; margin-left: 4px; }
+
+  .tabs { display: flex; gap: 4px; }
+  .tab-btn {
+    padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: none; background: transparent; color: var(--muted);
+  }
+  .tab-btn:hover { background: var(--surface2); color: var(--text); }
+  .tab-btn.active { background: rgba(59,130,246,0.15); color: var(--accent); }
+
+  .save-badge {
+    display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted);
+  }
+  .save-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .save-dot.saving { background: var(--yellow); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  .main { max-width: 1100px; margin: 0 auto; padding: 24px; }
+  .page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .page-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .card-title { font-size: 13px; font-weight: 600; }
+
+  .btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; }
+  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--border); }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-danger { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  .abt-list { padding: 8px; }
+  .abt-row {
+    display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px;
+  }
+  .abt-row:hover { background: var(--surface2); }
+  .abt-swatch { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; }
+  .abt-kuerzel { font-family: var(--mono); font-size: 11px; color: var(--muted); width: 28px; }
+  .abt-name { flex: 1; font-size: 13px; font-weight: 500; }
+  .abt-count { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+  .abt-actions { display: flex; gap: 6px; }
+  .abt-row.inactive { opacity: 0.4; }
+
+  .ma-list { padding: 8px; }
+  .ma-row {
+    display: grid; grid-template-columns: 32px 1fr 160px 100px 90px; gap: 12px; align-items: center;
+    padding: 10px 12px; border-radius: 8px;
+  }
+  .ma-row.header { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; font-weight: 600; }
+  .ma-row:not(.header):hover { background: var(--surface2); }
+  .ma-avatar {
+    width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; background: rgba(59,130,246,0.15); color: var(--accent);
+  }
+  .ma-name-cell input, .ma-rate-cell input {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    border-radius: 6px; padding: 6px 8px; font-size: 13px; width: 100%; font-family: var(--sans);
+  }
+  .ma-rate-cell input { font-family: var(--mono); }
+  .ma-select {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    border-radius: 6px; padding: 6px 8px; font-size: 12px; width: 100%;
+  }
+  .ma-inactive-toggle { font-size: 11px; color: var(--muted); cursor: pointer; }
+  .ma-row.inactive { opacity: 0.4; }
+
+  .add-row { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+  .add-row input { flex: 1; background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 8px 12px; font-size: 13px; }
+  .add-row input.small { flex: 0 0 90px; font-family: var(--mono); }
+  .add-row select { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 8px 12px; font-size: 13px; flex: 0 0 180px; }
+
+  .empty-hint { padding: 24px; text-align: center; color: var(--muted); font-size: 13px; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo"><div class="logo-icon">🔐</div> SmartGate <span>/ Profitcenter · Riedel Classics</span></div>
+  <div class="save-badge"><div class="save-dot" id="saveDot"></div><span id="saveText">Gespeichert</span></div>
+</div>
+
+<div class="main">
+  <div class="page-title">Stammdaten</div>
+  <div class="page-sub">Abteilungen und Mitarbeiter für Profitcenter-Zuordnung und Zeiterfassung</div>
+
+  <!-- ABTEILUNGEN -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">🏭 Abteilungen</div>
+    </div>
+    <div class="abt-list" id="abtList"></div>
+    <div class="add-row">
+      <input type="text" id="newAbtName" placeholder="Neue Abteilung, z. B. Sattlerei">
+      <input type="text" id="newAbtKuerzel" class="small" placeholder="Kürzel" maxlength="4">
+      <button class="btn btn-primary" onclick="addAbteilung()">+ Anlegen</button>
+    </div>
+  </div>
+
+  <!-- MITARBEITER -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">👥 Mitarbeiter</div>
+    </div>
+    <div class="ma-list" id="maList"></div>
+    <div class="add-row">
+      <input type="text" id="newMaName" placeholder="Name">
+      <select id="newMaAbt"></select>
+      <input type="text" id="newMaRate" class="small" placeholder="€/Std">
+      <button class="btn btn-primary" onclick="addMitarbeiter()">+ Anlegen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var SUPABASE_URL = "https://ysqzdqazcgyuzdorauiq.supabase.co";
+var SUPABASE_ANON_KEY = "sb_publishable_v4kXJa0y-2EHsCFPqBFHfg_QvzKLnt2";
+
+var STATE = { abteilungen: [], mitarbeiter: [] };
+
+function sbHeaders(extra) {
+  var h = { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY, "Content-Type": "application/json" };
+  if (extra) for (var k in extra) h[k] = extra[k];
+  return h;
+}
+
+function setSaving(on) {
+  var dot = document.getElementById('saveDot'), txt = document.getElementById('saveText');
+  if (on) { dot.className = 'save-dot saving'; txt.textContent = 'Speichert…'; }
+  else { dot.className = 'save-dot'; txt.textContent = 'Gespeichert'; }
+}
+
+function initials(name) {
+  var parts = (name||'').trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].substring(0,2).toUpperCase();
+  return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+}
+
+// ── LOAD ──────────────────────────────────────────────
+function loadAll() {
+  Promise.all([
+    fetch(SUPABASE_URL + "/rest/v1/sg_abteilungen?select=*&order=sortierung.asc", { headers: sbHeaders() }).then(function(r){return r.json();}),
+    fetch(SUPABASE_URL + "/rest/v1/sg_mitarbeiter?select=*&order=name.asc", { headers: sbHeaders() }).then(function(r){return r.json();})
+  ]).then(function(res) {
+    STATE.abteilungen = res[0] || [];
+    STATE.mitarbeiter = res[1] || [];
+    render();
+  }).catch(function(e) {
+    console.error('Ladefehler:', e);
+    document.getElementById('abtList').innerHTML = '<div class="empty-hint">Fehler beim Laden. Bitte Seite neu laden.</div>';
+  });
+}
+
+// ── RENDER ────────────────────────────────────────────
+function render() {
+  renderAbteilungen();
+  renderMitarbeiter();
+  renderAbtSelect();
+}
+
+function renderAbteilungen() {
+  var list = document.getElementById('abtList');
+  if (!STATE.abteilungen.length) { list.innerHTML = '<div class="empty-hint">Noch keine Abteilungen angelegt.</div>'; return; }
+  var html = '';
+  STATE.abteilungen.forEach(function(a) {
+    var count = STATE.mitarbeiter.filter(function(m){return m.abteilung_id === a.id && m.aktiv;}).length;
+    html += '<div class="abt-row' + (a.aktiv ? '' : ' inactive') + '">'
+      + '<div class="abt-swatch" style="background:' + a.farbe + '"></div>'
+      + '<div class="abt-kuerzel">' + a.kuerzel + '</div>'
+      + '<div class="abt-name">' + a.name + '</div>'
+      + '<div class="abt-count">' + count + ' MA</div>'
+      + '<div class="abt-actions">'
+      + '<button class="btn btn-ghost btn-sm" onclick="toggleAbteilung(\'' + a.id + '\',' + !a.aktiv + ')">' + (a.aktiv ? 'Deaktivieren' : 'Aktivieren') + '</button>'
+      + '</div></div>';
+  });
+  list.innerHTML = html;
+}
+
+function renderAbtSelect() {
+  var sel = document.getElementById('newMaAbt');
+  sel.innerHTML = STATE.abteilungen.filter(function(a){return a.aktiv;}).map(function(a) {
+    return '<option value="' + a.id + '">' + a.name + '</option>';
+  }).join('');
+}
+
+function renderMitarbeiter() {
+  var list = document.getElementById('maList');
+  var html = '<div class="ma-row header"><div></div><div>Name</div><div>Abteilung</div><div>€/Std</div><div>Status</div></div>';
+  if (!STATE.mitarbeiter.length) {
+    list.innerHTML = html + '<div class="empty-hint">Noch keine Mitarbeiter angelegt.</div>';
+    return;
+  }
+  STATE.mitarbeiter.forEach(function(m) {
+    var abtOptions = STATE.abteilungen.map(function(a) {
+      return '<option value="' + a.id + '"' + (a.id === m.abteilung_id ? ' selected' : '') + '>' + a.name + '</option>';
+    }).join('');
+    html += '<div class="ma-row' + (m.aktiv ? '' : ' inactive') + '">'
+      + '<div class="ma-avatar">' + initials(m.name) + '</div>'
+      + '<div class="ma-name-cell"><input type="text" value="' + (m.name||'').replace(/"/g,'&quot;') + '" onchange="updateMitarbeiter(\'' + m.id + '\',{name:this.value})"></div>'
+      + '<div><select class="ma-select" onchange="updateMitarbeiter(\'' + m.id + '\',{abteilung_id:this.value})">' + abtOptions + '</select></div>'
+      + '<div class="ma-rate-cell"><input type="number" step="0.5" value="' + (m.stundensatz!=null?m.stundensatz:'') + '" onchange="updateMitarbeiter(\'' + m.id + '\',{stundensatz:this.value?parseFloat(this.value):null})"></div>'
+      + '<div class="ma-inactive-toggle" onclick="toggleMitarbeiter(\'' + m.id + '\',' + !m.aktiv + ')">' + (m.aktiv ? '✅ Aktiv' : '⏸️ Inaktiv') + '</div>'
+      + '</div>';
+  });
+  list.innerHTML = html;
+}
+
+// ── ACTIONS ───────────────────────────────────────────
+function addAbteilung() {
+  var nameEl = document.getElementById('newAbtName'), kzEl = document.getElementById('newAbtKuerzel');
+  var name = nameEl.value.trim(), kuerzel = kzEl.value.trim().toUpperCase();
+  if (!name || !kuerzel) { alert('Bitte Name und Kürzel angeben.'); return; }
+  setSaving(true);
+  fetch(SUPABASE_URL + "/rest/v1/sg_abteilungen", {
+    method: "POST", headers: sbHeaders({ "Prefer": "return=representation" }),
+    body: JSON.stringify({ name: name, kuerzel: kuerzel, sortierung: STATE.abteilungen.length + 1 })
+  }).then(function(r){return r.json();}).then(function(d) {
+    if (d && d[0]) STATE.abteilungen.push(d[0]);
+    nameEl.value = ''; kzEl.value = '';
+    render(); setSaving(false);
+  }).catch(function(e){ console.error(e); setSaving(false); alert('Fehler beim Anlegen (Kürzel/Name evtl. schon vergeben).'); });
+}
+
+function toggleAbteilung(id, newVal) {
+  setSaving(true);
+  fetch(SUPABASE_URL + "/rest/v1/sg_abteilungen?id=eq." + id, {
+    method: "PATCH", headers: sbHeaders(), body: JSON.stringify({ aktiv: newVal })
+  }).then(function() {
+    var a = STATE.abteilungen.find(function(x){return x.id===id;});
+    if (a) a.aktiv = newVal;
+    render(); setSaving(false);
+  }).catch(function(e){ console.error(e); setSaving(false); });
+}
+
+function addMitarbeiter() {
+  var nameEl = document.getElementById('newMaName'), abtEl = document.getElementById('newMaAbt'), rateEl = document.getElementById('newMaRate');
+  var name = nameEl.value.trim();
+  if (!name) { alert('Bitte Namen angeben.'); return; }
+  if (!STATE.abteilungen.length) { alert('Bitte zuerst eine Abteilung anlegen.'); return; }
+  var rate = rateEl.value ? parseFloat(rateEl.value) : null;
+  setSaving(true);
+  fetch(SUPABASE_URL + "/rest/v1/sg_mitarbeiter", {
+    method: "POST", headers: sbHeaders({ "Prefer": "return=representation" }),
+    body: JSON.stringify({ name: name, abteilung_id: abtEl.value, stundensatz: rate })
+  }).then(function(r){return r.json();}).then(function(d) {
+    if (d && d[0]) STATE.mitarbeiter.push(d[0]);
+    nameEl.value = ''; rateEl.value = '';
+    render(); setSaving(false);
+  }).catch(function(e){ console.error(e); setSaving(false); alert('Fehler beim Anlegen.'); });
+}
+
+function updateMitarbeiter(id, patch) {
+  setSaving(true);
+  fetch(SUPABASE_URL + "/rest/v1/sg_mitarbeiter?id=eq." + id, {
+    method: "PATCH", headers: sbHeaders(), body: JSON.stringify(patch)
+  }).then(function() {
+    var m = STATE.mitarbeiter.find(function(x){return x.id===id;});
+    if (m) for (var k in patch) m[k] = patch[k];
+    setSaving(false);
+  }).catch(function(e){ console.error(e); setSaving(false); });
+}
+
+function toggleMitarbeiter(id, newVal) {
+  updateMitarbeiter(id, { aktiv: newVal });
+  setTimeout(render, 200);
+}
+
+loadAll();
+</script>
+</body>
+</html>
