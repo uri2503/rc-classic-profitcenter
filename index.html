@@ -1,4 +1,4 @@
-<!-- build: 2026-07-17-1 -->
+<!-- build: 2026-07-17-2 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -35,33 +35,19 @@
   }
 
   .topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 24px;
-    height: 56px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; height: 56px; background: var(--surface);
+    border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
   }
 
   .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; letter-spacing: -0.3px; }
   .logo-icon { width: 30px; height: 30px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
   .logo span { color: var(--muted); font-weight: 400; margin-left: 4px; }
 
-  .tabs { display: flex; gap: 4px; }
-  .tab-btn {
-    padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
-    cursor: pointer; border: none; background: transparent; color: var(--muted);
-  }
-  .tab-btn:hover { background: var(--surface2); color: var(--text); }
-  .tab-btn.active { background: rgba(59,130,246,0.15); color: var(--accent); }
+  .nav-link { font-size: 13px; color: var(--muted); text-decoration: none; padding: 7px 12px; border-radius: 8px; }
+  .nav-link:hover { background: var(--surface2); color: var(--text); }
 
-  .save-badge {
-    display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted);
-  }
+  .save-badge { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
   .save-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
   .save-dot.saving { background: var(--yellow); animation: pulse 1s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
@@ -79,13 +65,10 @@
   .btn-ghost:hover { background: var(--border); }
   .btn-primary { background: var(--accent); color: white; }
   .btn-primary:hover { background: var(--accent2); }
-  .btn-danger { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
   .btn-sm { padding: 5px 10px; font-size: 12px; }
 
   .abt-list { padding: 8px; }
-  .abt-row {
-    display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px;
-  }
+  .abt-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; }
   .abt-row:hover { background: var(--surface2); }
   .abt-swatch { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; }
   .abt-kuerzel { font-family: var(--mono); font-size: 11px; color: var(--muted); width: 28px; }
@@ -95,25 +78,13 @@
   .abt-row.inactive { opacity: 0.4; }
 
   .ma-list { padding: 8px; }
-  .ma-row {
-    display: grid; grid-template-columns: 32px 1fr 160px 100px 90px; gap: 12px; align-items: center;
-    padding: 10px 12px; border-radius: 8px;
-  }
+  .ma-row { display: grid; grid-template-columns: 32px 1fr 160px 100px 90px; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 8px; }
   .ma-row.header { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; font-weight: 600; }
   .ma-row:not(.header):hover { background: var(--surface2); }
-  .ma-avatar {
-    width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 600; background: rgba(59,130,246,0.15); color: var(--accent);
-  }
-  .ma-name-cell input, .ma-rate-cell input {
-    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
-    border-radius: 6px; padding: 6px 8px; font-size: 13px; width: 100%; font-family: var(--sans);
-  }
+  .ma-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; background: rgba(59,130,246,0.15); color: var(--accent); }
+  .ma-name-cell input, .ma-rate-cell input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 8px; font-size: 13px; width: 100%; font-family: var(--sans); }
   .ma-rate-cell input { font-family: var(--mono); }
-  .ma-select {
-    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
-    border-radius: 6px; padding: 6px 8px; font-size: 12px; width: 100%;
-  }
+  .ma-select { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 8px; font-size: 12px; width: 100%; }
   .ma-inactive-toggle { font-size: 11px; color: var(--muted); cursor: pointer; }
   .ma-row.inactive { opacity: 0.4; }
 
@@ -124,6 +95,16 @@
 
   .empty-hint { padding: 24px; text-align: center; color: var(--muted); font-size: 13px; }
 
+  /* GATE */
+  .gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 999; padding: 24px; }
+  .gate-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 32px 28px; max-width: 320px; width: 100%; text-align: center; }
+  .gate-icon { font-size: 40px; margin-bottom: 12px; }
+  .gate-title { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .gate-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+  .gate-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 12px 14px; font-size: 15px; margin-bottom: 12px; text-align: center; }
+  .gate-error { color: var(--red); font-size: 12px; margin-bottom: 10px; min-height: 16px; }
+  .gate-btn { width: 100%; padding: 12px; border-radius: 10px; border: none; background: var(--accent); color: white; font-size: 14px; font-weight: 600; cursor: pointer; }
+
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -131,20 +112,32 @@
 </head>
 <body>
 
+<!-- PASSWORT-GATE -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-icon">🔒</div>
+    <div class="gate-title">Chef-Zugang</div>
+    <div class="gate-sub">Stammdaten sind passwortgeschützt</div>
+    <input type="password" class="gate-input" id="gatePw" placeholder="Passwort" onkeydown="if(event.key==='Enter')checkGate()">
+    <div class="gate-error" id="gateError"></div>
+    <button class="gate-btn" onclick="checkGate()">Entsperren</button>
+  </div>
+</div>
+
 <div class="topbar">
   <div class="logo"><div class="logo-icon">🔐</div> SmartGate <span>/ Profitcenter · Riedel Classics</span></div>
-  <div class="save-badge"><div class="save-dot" id="saveDot"></div><span id="saveText">Gespeichert</span></div>
+  <div style="display:flex;align-items:center;gap:16px">
+    <a class="nav-link" href="dashboard.html">📊 Dashboard</a>
+    <div class="save-badge"><div class="save-dot" id="saveDot"></div><span id="saveText">Gespeichert</span></div>
+  </div>
 </div>
 
 <div class="main">
   <div class="page-title">Stammdaten</div>
   <div class="page-sub">Abteilungen und Mitarbeiter für Profitcenter-Zuordnung und Zeiterfassung</div>
 
-  <!-- ABTEILUNGEN -->
   <div class="card">
-    <div class="card-header">
-      <div class="card-title">🏭 Abteilungen</div>
-    </div>
+    <div class="card-header"><div class="card-title">🏭 Abteilungen</div></div>
     <div class="abt-list" id="abtList"></div>
     <div class="add-row">
       <input type="text" id="newAbtName" placeholder="Neue Abteilung, z. B. Sattlerei">
@@ -153,11 +146,8 @@
     </div>
   </div>
 
-  <!-- MITARBEITER -->
   <div class="card">
-    <div class="card-header">
-      <div class="card-title">👥 Mitarbeiter</div>
-    </div>
+    <div class="card-header"><div class="card-title">👥 Mitarbeiter</div></div>
     <div class="ma-list" id="maList"></div>
     <div class="add-row">
       <input type="text" id="newMaName" placeholder="Name">
@@ -169,15 +159,40 @@
 </div>
 
 <script>
-var SUPABASE_URL = "https://ysqzdqazcgyuzdorauiq.supabase.co";
+var ADMIN_FN_URL = "https://ysqzdqazcgyuzdorauiq.supabase.co/functions/v1/sg-admin";
 var SUPABASE_ANON_KEY = "sb_publishable_v4kXJa0y-2EHsCFPqBFHfg_QvzKLnt2";
+var PW_STORAGE_KEY = "sg_admin_pw";
 
-var STATE = { abteilungen: [], mitarbeiter: [] };
+var STATE = { abteilungen: [], mitarbeiter: [], pw: null };
 
-function sbHeaders(extra) {
-  var h = { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY, "Content-Type": "application/json" };
-  if (extra) for (var k in extra) h[k] = extra[k];
-  return h;
+function call(action, payload) {
+  return fetch(ADMIN_FN_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
+    body: JSON.stringify({ password: STATE.pw, action: action, payload: payload || {} })
+  }).then(function(r) {
+    if (r.status === 401) { sessionStorage.removeItem(PW_STORAGE_KEY); showGate("Passwort abgelaufen, bitte erneut eingeben."); throw new Error("unauthorized"); }
+    return r.json();
+  });
+}
+
+function showGate(err) {
+  document.getElementById('gate').style.display = 'flex';
+  document.getElementById('gateError').textContent = err || '';
+}
+function hideGate() { document.getElementById('gate').style.display = 'none'; }
+
+function checkGate() {
+  var pw = document.getElementById('gatePw').value;
+  if (!pw) return;
+  STATE.pw = pw;
+  document.getElementById('gateError').textContent = '';
+  call('list_abteilungen').then(function(res) {
+    if (res.error) { showGate(res.error); STATE.pw = null; return; }
+    sessionStorage.setItem(PW_STORAGE_KEY, pw);
+    hideGate();
+    loadAll();
+  }).catch(function() {});
 }
 
 function setSaving(on) {
@@ -192,27 +207,17 @@ function initials(name) {
   return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
 }
 
-// ── LOAD ──────────────────────────────────────────────
 function loadAll() {
-  Promise.all([
-    fetch(SUPABASE_URL + "/rest/v1/sg_abteilungen?select=*&order=sortierung.asc", { headers: sbHeaders() }).then(function(r){return r.json();}),
-    fetch(SUPABASE_URL + "/rest/v1/sg_mitarbeiter?select=*&order=name.asc", { headers: sbHeaders() }).then(function(r){return r.json();})
-  ]).then(function(res) {
-    STATE.abteilungen = res[0] || [];
-    STATE.mitarbeiter = res[1] || [];
+  Promise.all([ call('list_abteilungen'), call('list_mitarbeiter') ]).then(function(res) {
+    STATE.abteilungen = (res[0] && res[0].data) || [];
+    STATE.mitarbeiter = (res[1] && res[1].data) || [];
+    STATE.abteilungen.sort(function(a,b){ return (a.sortierung||0) - (b.sortierung||0); });
+    STATE.mitarbeiter.sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
     render();
-  }).catch(function(e) {
-    console.error('Ladefehler:', e);
-    document.getElementById('abtList').innerHTML = '<div class="empty-hint">Fehler beim Laden. Bitte Seite neu laden.</div>';
-  });
+  }).catch(function(e) { console.error('Ladefehler:', e); });
 }
 
-// ── RENDER ────────────────────────────────────────────
-function render() {
-  renderAbteilungen();
-  renderMitarbeiter();
-  renderAbtSelect();
-}
+function render() { renderAbteilungen(); renderMitarbeiter(); renderAbtSelect(); }
 
 function renderAbteilungen() {
   var list = document.getElementById('abtList');
@@ -225,9 +230,8 @@ function renderAbteilungen() {
       + '<div class="abt-kuerzel">' + a.kuerzel + '</div>'
       + '<div class="abt-name">' + a.name + '</div>'
       + '<div class="abt-count">' + count + ' MA</div>'
-      + '<div class="abt-actions">'
-      + '<button class="btn btn-ghost btn-sm" onclick="toggleAbteilung(\'' + a.id + '\',' + !a.aktiv + ')">' + (a.aktiv ? 'Deaktivieren' : 'Aktivieren') + '</button>'
-      + '</div></div>';
+      + '<div class="abt-actions"><button class="btn btn-ghost btn-sm" onclick="toggleAbteilung(\'' + a.id + '\',' + !a.aktiv + ')">' + (a.aktiv ? 'Deaktivieren' : 'Aktivieren') + '</button></div>'
+      + '</div>';
   });
   list.innerHTML = html;
 }
@@ -242,10 +246,7 @@ function renderAbtSelect() {
 function renderMitarbeiter() {
   var list = document.getElementById('maList');
   var html = '<div class="ma-row header"><div></div><div>Name</div><div>Abteilung</div><div>€/Std</div><div>Status</div></div>';
-  if (!STATE.mitarbeiter.length) {
-    list.innerHTML = html + '<div class="empty-hint">Noch keine Mitarbeiter angelegt.</div>';
-    return;
-  }
+  if (!STATE.mitarbeiter.length) { list.innerHTML = html + '<div class="empty-hint">Noch keine Mitarbeiter angelegt.</div>'; return; }
   STATE.mitarbeiter.forEach(function(m) {
     var abtOptions = STATE.abteilungen.map(function(a) {
       return '<option value="' + a.id + '"' + (a.id === m.abteilung_id ? ' selected' : '') + '>' + a.name + '</option>';
@@ -261,27 +262,22 @@ function renderMitarbeiter() {
   list.innerHTML = html;
 }
 
-// ── ACTIONS ───────────────────────────────────────────
 function addAbteilung() {
   var nameEl = document.getElementById('newAbtName'), kzEl = document.getElementById('newAbtKuerzel');
   var name = nameEl.value.trim(), kuerzel = kzEl.value.trim().toUpperCase();
   if (!name || !kuerzel) { alert('Bitte Name und Kürzel angeben.'); return; }
   setSaving(true);
-  fetch(SUPABASE_URL + "/rest/v1/sg_abteilungen", {
-    method: "POST", headers: sbHeaders({ "Prefer": "return=representation" }),
-    body: JSON.stringify({ name: name, kuerzel: kuerzel, sortierung: STATE.abteilungen.length + 1 })
-  }).then(function(r){return r.json();}).then(function(d) {
-    if (d && d[0]) STATE.abteilungen.push(d[0]);
-    nameEl.value = ''; kzEl.value = '';
-    render(); setSaving(false);
-  }).catch(function(e){ console.error(e); setSaving(false); alert('Fehler beim Anlegen (Kürzel/Name evtl. schon vergeben).'); });
+  call('add_abteilung', { name: name, kuerzel: kuerzel, farbe: '#3b82f6', sortierung: STATE.abteilungen.length + 1 })
+    .then(function(res) {
+      if (res.error) { alert('Fehler: ' + res.error); setSaving(false); return; }
+      nameEl.value = ''; kzEl.value = '';
+      loadAll(); setSaving(false);
+    }).catch(function(e){ console.error(e); setSaving(false); });
 }
 
 function toggleAbteilung(id, newVal) {
   setSaving(true);
-  fetch(SUPABASE_URL + "/rest/v1/sg_abteilungen?id=eq." + id, {
-    method: "PATCH", headers: sbHeaders(), body: JSON.stringify({ aktiv: newVal })
-  }).then(function() {
+  call('update_abteilung', { id: id, patch: { aktiv: newVal } }).then(function() {
     var a = STATE.abteilungen.find(function(x){return x.id===id;});
     if (a) a.aktiv = newVal;
     render(); setSaving(false);
@@ -295,33 +291,34 @@ function addMitarbeiter() {
   if (!STATE.abteilungen.length) { alert('Bitte zuerst eine Abteilung anlegen.'); return; }
   var rate = rateEl.value ? parseFloat(rateEl.value) : null;
   setSaving(true);
-  fetch(SUPABASE_URL + "/rest/v1/sg_mitarbeiter", {
-    method: "POST", headers: sbHeaders({ "Prefer": "return=representation" }),
-    body: JSON.stringify({ name: name, abteilung_id: abtEl.value, stundensatz: rate })
-  }).then(function(r){return r.json();}).then(function(d) {
-    if (d && d[0]) STATE.mitarbeiter.push(d[0]);
+  call('add_mitarbeiter', { name: name, abteilung_id: abtEl.value, stundensatz: rate }).then(function(res) {
+    if (res.error) { alert('Fehler: ' + res.error); setSaving(false); return; }
     nameEl.value = ''; rateEl.value = '';
-    render(); setSaving(false);
-  }).catch(function(e){ console.error(e); setSaving(false); alert('Fehler beim Anlegen.'); });
+    loadAll(); setSaving(false);
+  }).catch(function(e){ console.error(e); setSaving(false); });
 }
 
 function updateMitarbeiter(id, patch) {
   setSaving(true);
-  fetch(SUPABASE_URL + "/rest/v1/sg_mitarbeiter?id=eq." + id, {
-    method: "PATCH", headers: sbHeaders(), body: JSON.stringify(patch)
-  }).then(function() {
+  call('update_mitarbeiter', { id: id, patch: patch }).then(function() {
     var m = STATE.mitarbeiter.find(function(x){return x.id===id;});
     if (m) for (var k in patch) m[k] = patch[k];
     setSaving(false);
   }).catch(function(e){ console.error(e); setSaving(false); });
 }
 
-function toggleMitarbeiter(id, newVal) {
-  updateMitarbeiter(id, { aktiv: newVal });
-  setTimeout(render, 200);
-}
+function toggleMitarbeiter(id, newVal) { updateMitarbeiter(id, { aktiv: newVal }); setTimeout(render, 200); }
 
-loadAll();
+var savedPw = sessionStorage.getItem(PW_STORAGE_KEY);
+if (savedPw) {
+  STATE.pw = savedPw;
+  call('list_abteilungen').then(function(res) {
+    if (res.error) { sessionStorage.removeItem(PW_STORAGE_KEY); STATE.pw = null; showGate(); }
+    else { hideGate(); loadAll(); }
+  }).catch(function(){ showGate(); });
+} else {
+  showGate();
+}
 </script>
 </body>
 </html>

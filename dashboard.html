@@ -1,0 +1,319 @@
+<!-- build: 2026-07-17-1 -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Profitcenter Riedel Classics</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg:        #0d0f14;
+    --surface:   #141820;
+    --surface2:  #1c2230;
+    --border:    #252d3d;
+    --accent:    #3b82f6;
+    --accent2:   #1d4ed8;
+    --green:     #22c55e;
+    --yellow:    #f59e0b;
+    --red:       #ef4444;
+    --text:      #e8eaf0;
+    --muted:     #6b7a99;
+    --mono:      'JetBrains Mono', monospace;
+    --sans:      'Inter', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; font-size: 14px; }
+
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 56px; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; letter-spacing: -0.3px; }
+  .logo-icon { width: 30px; height: 30px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .logo span { color: var(--muted); font-weight: 400; margin-left: 4px; }
+  .nav-link { font-size: 13px; color: var(--muted); text-decoration: none; padding: 7px 12px; border-radius: 8px; }
+  .nav-link:hover { background: var(--surface2); color: var(--text); }
+  .time-display { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+
+  .main { max-width: 1200px; margin: 0 auto; padding: 24px; }
+  .page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .page-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+
+  .range-tabs { display: flex; gap: 4px; margin-bottom: 20px; }
+  .range-btn { padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; background: var(--surface2); color: var(--muted); }
+  .range-btn.active { background: rgba(59,130,246,0.15); color: var(--accent); }
+
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .kpi-label { font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .kpi-value { font-size: 28px; font-weight: 700; font-family: var(--mono); line-height: 1; margin-bottom: 6px; }
+  .kpi-meta { font-size: 11px; color: var(--muted); }
+  .kpi-green { color: var(--green); } .kpi-blue { color: var(--accent); } .kpi-yellow { color: var(--yellow); }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .card-title { font-size: 13px; font-weight: 600; }
+
+  .abt-bar-list { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .abt-bar-row { display: flex; align-items: center; gap: 12px; }
+  .abt-bar-label { width: 170px; flex-shrink: 0; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+  .abt-bar-swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .abt-bar-track { flex: 1; height: 20px; background: var(--surface2); border-radius: 6px; overflow: hidden; position: relative; }
+  .abt-bar-fill { height: 100%; border-radius: 6px; transition: width 0.3s; }
+  .abt-bar-value { width: 130px; text-align: right; font-family: var(--mono); font-size: 12px; color: var(--muted); flex-shrink: 0; }
+
+  .anwesend-grid { padding: 8px; }
+  .anwesend-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; }
+  .anwesend-row:hover { background: var(--surface2); }
+  .ma-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; background: rgba(34,197,94,0.15); color: var(--green); flex-shrink: 0; }
+  .anwesend-info { flex: 1; }
+  .anwesend-name { font-size: 13px; font-weight: 500; }
+  .anwesend-abt { font-size: 11px; color: var(--muted); }
+  .anwesend-since { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+  .empty-hint { padding: 24px; text-align: center; color: var(--muted); font-size: 13px; }
+
+  /* GATE */
+  .gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 999; padding: 24px; }
+  .gate-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 32px 28px; max-width: 320px; width: 100%; text-align: center; }
+  .gate-icon { font-size: 40px; margin-bottom: 12px; }
+  .gate-title { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .gate-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+  .gate-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 12px 14px; font-size: 15px; margin-bottom: 12px; text-align: center; }
+  .gate-error { color: var(--red); font-size: 12px; margin-bottom: 10px; min-height: 16px; }
+  .gate-btn { width: 100%; padding: 12px; border-radius: 10px; border: none; background: var(--accent); color: white; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-icon">🔒</div>
+    <div class="gate-title">Chef-Zugang</div>
+    <div class="gate-sub">Dashboard ist passwortgeschützt</div>
+    <input type="password" class="gate-input" id="gatePw" placeholder="Passwort" onkeydown="if(event.key==='Enter')checkGate()">
+    <div class="gate-error" id="gateError"></div>
+    <button class="gate-btn" onclick="checkGate()">Entsperren</button>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="logo"><div class="logo-icon">🔐</div> SmartGate <span>/ Profitcenter · Riedel Classics</span></div>
+  <div style="display:flex;align-items:center;gap:16px">
+    <a class="nav-link" href="index.html">⚙️ Stammdaten</a>
+    <div class="time-display" id="clock">--:--:--</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="page-title">Dashboard</div>
+  <div class="page-sub">Anwesenheit, Stunden und Personalkosten je Abteilung</div>
+
+  <div class="range-tabs">
+    <button class="range-btn active" data-range="today" onclick="setRange('today')">Heute</button>
+    <button class="range-btn" data-range="week" onclick="setRange('week')">Diese Woche</button>
+    <button class="range-btn" data-range="month" onclick="setRange('month')">Dieser Monat</button>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">Anwesend jetzt</div>
+      <div class="kpi-value kpi-green" id="kpiAnwesend">0</div>
+      <div class="kpi-meta" id="kpiAnwesendMeta">von 0 Mitarbeitern</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Stunden (Zeitraum)</div>
+      <div class="kpi-value kpi-blue" id="kpiStunden">0</div>
+      <div class="kpi-meta">Summe aller Abteilungen</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Personalkosten (Zeitraum)</div>
+      <div class="kpi-value kpi-yellow" id="kpiKosten">€0</div>
+      <div class="kpi-meta">Stunden × Stundensatz</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Ø Kosten/Std</div>
+      <div class="kpi-value" id="kpiAvgRate">€0</div>
+      <div class="kpi-meta">gewichteter Schnitt</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">📊 Stunden je Abteilung (Zeitraum)</div></div>
+    <div class="abt-bar-list" id="abtBars"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">🟢 Aktuell anwesend</div></div>
+    <div class="anwesend-grid" id="anwesendList"></div>
+  </div>
+</div>
+
+<script>
+var ADMIN_FN_URL = "https://ysqzdqazcgyuzdorauiq.supabase.co/functions/v1/sg-admin";
+var SUPABASE_URL = "https://ysqzdqazcgyuzdorauiq.supabase.co";
+var SUPABASE_ANON_KEY = "sb_publishable_v4kXJa0y-2EHsCFPqBFHfg_QvzKLnt2";
+var PW_STORAGE_KEY = "sg_admin_pw";
+
+var STATE = { abteilungen: [], mitarbeiter: [], eintraege: [], pw: null, range: 'today' };
+
+function call(action, payload) {
+  return fetch(ADMIN_FN_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
+    body: JSON.stringify({ password: STATE.pw, action: action, payload: payload || {} })
+  }).then(function(r) {
+    if (r.status === 401) { sessionStorage.removeItem(PW_STORAGE_KEY); showGate("Passwort abgelaufen, bitte erneut eingeben."); throw new Error("unauthorized"); }
+    return r.json();
+  });
+}
+
+function sbHeaders() { return { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY }; }
+
+function showGate(err) { document.getElementById('gate').style.display = 'flex'; document.getElementById('gateError').textContent = err || ''; }
+function hideGate() { document.getElementById('gate').style.display = 'none'; }
+
+function checkGate() {
+  var pw = document.getElementById('gatePw').value;
+  if (!pw) return;
+  STATE.pw = pw;
+  document.getElementById('gateError').textContent = '';
+  call('list_abteilungen').then(function(res) {
+    if (res.error) { showGate(res.error); STATE.pw = null; return; }
+    sessionStorage.setItem(PW_STORAGE_KEY, pw);
+    hideGate();
+    loadAll();
+  }).catch(function() {});
+}
+
+function initials(name) {
+  var parts = (name||'').trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].substring(0,2).toUpperCase();
+  return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+}
+
+function updateClock() { document.getElementById('clock').textContent = new Date().toLocaleTimeString('de-DE'); }
+updateClock(); setInterval(updateClock, 1000);
+
+function rangeStart(range) {
+  var d = new Date();
+  if (range === 'today') { d.setHours(0,0,0,0); }
+  else if (range === 'week') { var day = (d.getDay() + 6) % 7; d.setDate(d.getDate() - day); d.setHours(0,0,0,0); }
+  else if (range === 'month') { d.setDate(1); d.setHours(0,0,0,0); }
+  return d;
+}
+
+function setRange(r) {
+  STATE.range = r;
+  document.querySelectorAll('.range-btn').forEach(function(b) { b.classList.toggle('active', b.dataset.range === r); });
+  loadZeiterfassung();
+}
+
+function loadAll() {
+  Promise.all([ call('list_abteilungen'), call('list_mitarbeiter') ]).then(function(res) {
+    STATE.abteilungen = (res[0] && res[0].data) || [];
+    STATE.mitarbeiter = (res[1] && res[1].data) || [];
+    loadZeiterfassung();
+    loadAnwesend();
+  }).catch(function(e) { console.error(e); });
+}
+
+function loadZeiterfassung() {
+  var von = rangeStart(STATE.range).toISOString();
+  call('list_zeiterfassung', { von: von }).then(function(res) {
+    STATE.eintraege = (res && res.data) || [];
+    renderStats();
+  }).catch(function(e) { console.error(e); });
+}
+
+// Anwesenheit ist unkritisch (kein Stundensatz) -> direkt public lesbar, kein Passwort-Overhead noetig
+function loadAnwesend() {
+  fetch(SUPABASE_URL + "/rest/v1/sg_zeiterfassung?select=*&gehen=is.null", { headers: sbHeaders() })
+    .then(function(r){ return r.json(); })
+    .then(function(data) { renderAnwesend(data || []); })
+    .catch(function(e){ console.error(e); });
+  setTimeout(loadAnwesend, 30000);
+}
+
+function maById(id) { return STATE.mitarbeiter.find(function(m){return m.id===id;}); }
+function abtById(id) { return STATE.abteilungen.find(function(a){return a.id===id;}); }
+
+function renderAnwesend(offene) {
+  var list = document.getElementById('anwesendList');
+  document.getElementById('kpiAnwesend').textContent = offene.length;
+  document.getElementById('kpiAnwesendMeta').textContent = 'von ' + STATE.mitarbeiter.filter(function(m){return m.aktiv;}).length + ' Mitarbeitern';
+
+  if (!offene.length) { list.innerHTML = '<div class="empty-hint">Aktuell niemand eingecheckt.</div>'; return; }
+  var html = '';
+  offene.forEach(function(e) {
+    var m = maById(e.mitarbeiter_id), a = abtById(e.abteilung_id);
+    html += '<div class="anwesend-row">'
+      + '<div class="ma-avatar">' + initials(m ? m.name : '?') + '</div>'
+      + '<div class="anwesend-info"><div class="anwesend-name">' + (m?m.name:'Unbekannt') + '</div><div class="anwesend-abt">' + (a?a.name:'—') + '</div></div>'
+      + '<div class="anwesend-since">seit ' + new Date(e.kommen).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}) + '</div>'
+      + '</div>';
+  });
+  list.innerHTML = html;
+}
+
+function hoursBetween(a, b) { return (new Date(b) - new Date(a)) / 3600000; }
+
+function renderStats() {
+  var byAbt = {}; // id -> {stunden, kosten}
+  var totalStunden = 0, totalKosten = 0, totalRatedStunden = 0;
+
+  STATE.eintraege.forEach(function(e) {
+    if (!e.gehen) return; // nur abgeschlossene Eintraege zaehlen
+    var std = hoursBetween(e.kommen, e.gehen);
+    if (std <= 0 || std > 16) return; // Ausreisser ignorieren
+    var m = maById(e.mitarbeiter_id);
+    var rate = (m && m.stundensatz) ? m.stundensatz : 0;
+    var kosten = std * rate;
+
+    if (!byAbt[e.abteilung_id]) byAbt[e.abteilung_id] = { stunden: 0, kosten: 0 };
+    byAbt[e.abteilung_id].stunden += std;
+    byAbt[e.abteilung_id].kosten += kosten;
+
+    totalStunden += std;
+    totalKosten += kosten;
+    if (rate > 0) totalRatedStunden += std;
+  });
+
+  document.getElementById('kpiStunden').textContent = totalStunden.toFixed(1);
+  document.getElementById('kpiKosten').textContent = '€' + totalKosten.toLocaleString('de-DE', {maximumFractionDigits:0});
+  document.getElementById('kpiAvgRate').textContent = totalRatedStunden > 0 ? '€' + (totalKosten/totalRatedStunden).toFixed(0) : '€0';
+
+  var maxStunden = Math.max.apply(null, STATE.abteilungen.map(function(a){ return (byAbt[a.id]&&byAbt[a.id].stunden)||0; }).concat([0.01]));
+  var barsEl = document.getElementById('abtBars');
+  if (!STATE.abteilungen.length) { barsEl.innerHTML = '<div class="empty-hint">Keine Abteilungen vorhanden.</div>'; return; }
+
+  var html = '';
+  STATE.abteilungen.forEach(function(a) {
+    var d = byAbt[a.id] || { stunden: 0, kosten: 0 };
+    var pct = Math.max(2, (d.stunden / maxStunden) * 100);
+    html += '<div class="abt-bar-row">'
+      + '<div class="abt-bar-label"><div class="abt-bar-swatch" style="background:' + a.farbe + '"></div>' + a.name + '</div>'
+      + '<div class="abt-bar-track"><div class="abt-bar-fill" style="width:' + pct + '%;background:' + a.farbe + '"></div></div>'
+      + '<div class="abt-bar-value">' + d.stunden.toFixed(1) + ' Std · €' + d.kosten.toLocaleString('de-DE',{maximumFractionDigits:0}) + '</div>'
+      + '</div>';
+  });
+  barsEl.innerHTML = html;
+}
+
+var savedPw = sessionStorage.getItem(PW_STORAGE_KEY);
+if (savedPw) {
+  STATE.pw = savedPw;
+  call('list_abteilungen').then(function(res) {
+    if (res.error) { sessionStorage.removeItem(PW_STORAGE_KEY); STATE.pw = null; showGate(); }
+    else { hideGate(); loadAll(); }
+  }).catch(function(){ showGate(); });
+} else {
+  showGate();
+}
+</script>
+</body>
+</html>

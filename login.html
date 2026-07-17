@@ -1,4 +1,4 @@
-<!-- build: 2026-07-17-1 -->
+<!-- build: 2026-07-17-2 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -156,7 +156,7 @@ setInterval(updateClock, 1000);
 function loadAll() {
   Promise.all([
     fetch(SUPABASE_URL + "/rest/v1/sg_abteilungen?select=*&aktiv=eq.true", { headers: sbHeaders() }).then(function(r){return r.json();}),
-    fetch(SUPABASE_URL + "/rest/v1/sg_mitarbeiter?select=*&aktiv=eq.true&order=name.asc", { headers: sbHeaders() }).then(function(r){return r.json();}),
+    fetch(SUPABASE_URL + "/rest/v1/sg_mitarbeiter_public?select=*&aktiv=eq.true&order=name.asc", { headers: sbHeaders() }).then(function(r){return r.json();}),
     fetch(SUPABASE_URL + "/rest/v1/sg_zeiterfassung?select=*&gehen=is.null", { headers: sbHeaders() }).then(function(r){return r.json();})
   ]).then(function(res) {
     STATE.abteilungen = res[0] || [];
