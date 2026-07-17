@@ -1,0 +1,310 @@
+<!-- build: 2026-07-17-1 -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zeiterfassung — Profitcenter Riedel Classics</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg:        #0d0f14;
+    --surface:   #141820;
+    --surface2:  #1c2230;
+    --border:    #252d3d;
+    --accent:    #3b82f6;
+    --accent2:   #1d4ed8;
+    --green:     #22c55e;
+    --yellow:    #f59e0b;
+    --red:       #ef4444;
+    --text:      #e8eaf0;
+    --muted:     #6b7a99;
+    --mono:      'JetBrains Mono', monospace;
+    --sans:      'Inter', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; font-size: 14px; }
+
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 56px; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; letter-spacing: -0.3px; }
+  .logo-icon { width: 30px; height: 30px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .logo span { color: var(--muted); font-weight: 400; margin-left: 4px; }
+  .nav-link { font-size: 13px; color: var(--muted); text-decoration: none; padding: 7px 12px; border-radius: 8px; }
+  .nav-link:hover { background: var(--surface2); color: var(--text); }
+
+  .save-badge { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .save-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .save-dot.saving { background: var(--yellow); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  .main { max-width: 1150px; margin: 0 auto; padding: 24px; }
+  .page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .page-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+
+  .filter-row { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
+  .filter-row select, .filter-row input[type=date] { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 8px 12px; font-size: 13px; }
+  .filter-hint { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .card-title { font-size: 13px; font-weight: 600; }
+
+  .btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-danger { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  .ze-list { padding: 8px; }
+  .ze-row { display: grid; grid-template-columns: 1fr 130px 170px 170px 90px auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 8px; }
+  .ze-row.header { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; font-weight: 600; }
+  .ze-row:not(.header):hover { background: var(--surface2); }
+  .ze-row.offen { background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.2); }
+  .ze-name { font-size: 13px; font-weight: 500; }
+  .ze-abt { font-size: 11px; color: var(--muted); }
+  .ze-row select, .ze-row input[type=datetime-local] { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 8px; font-size: 12px; width: 100%; font-family: var(--mono); }
+  .ze-dauer { font-family: var(--mono); font-size: 12px; color: var(--muted); text-align: right; }
+  .ze-offen-badge { font-size: 10px; padding: 3px 7px; border-radius: 6px; background: rgba(245,158,11,0.15); color: var(--yellow); font-weight: 600; }
+
+  .add-panel { padding: 14px 16px; border-top: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr 1fr 170px 170px auto; gap: 8px; align-items: center; }
+  .add-panel select, .add-panel input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px; }
+  .add-panel-label { grid-column: 1 / -1; font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+
+  .empty-hint { padding: 24px; text-align: center; color: var(--muted); font-size: 13px; }
+
+  .gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 999; padding: 24px; }
+  .gate-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 32px 28px; max-width: 320px; width: 100%; text-align: center; }
+  .gate-icon { font-size: 40px; margin-bottom: 12px; }
+  .gate-title { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .gate-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+  .gate-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 12px 14px; font-size: 15px; margin-bottom: 12px; text-align: center; }
+  .gate-error { color: var(--red); font-size: 12px; margin-bottom: 10px; min-height: 16px; }
+  .gate-btn { width: 100%; padding: 12px; border-radius: 10px; border: none; background: var(--accent); color: white; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-icon">🔒</div>
+    <div class="gate-title">Chef-Zugang</div>
+    <div class="gate-sub">Zeiterfassung ist passwortgeschützt</div>
+    <input type="password" class="gate-input" id="gatePw" placeholder="Passwort" onkeydown="if(event.key==='Enter')checkGate()">
+    <div class="gate-error" id="gateError"></div>
+    <button class="gate-btn" onclick="checkGate()">Entsperren</button>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="logo"><div class="logo-icon">🔐</div> SmartGate <span>/ Profitcenter · Riedel Classics</span></div>
+  <div style="display:flex;align-items:center;gap:16px">
+    <a class="nav-link" href="index.html">⚙️ Stammdaten</a>
+    <a class="nav-link" href="dashboard.html">📊 Dashboard</a>
+    <a class="nav-link" href="kostenschluessel.html">🧮 Kostenschlüssel</a>
+    <div class="save-badge"><div class="save-dot" id="saveDot"></div><span id="saveText">Gespeichert</span></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="page-title">Zeiterfassung — Korrekturen</div>
+  <div class="page-sub">Einträge prüfen, vergessenes Auschecken nachtragen, manuell ergänzen</div>
+
+  <div class="filter-row">
+    <select id="filterAbt" onchange="renderList()"><option value="">Alle Abteilungen</option></select>
+    <select id="filterZeitraum" onchange="onZeitraumChange()">
+      <option value="7">Letzte 7 Tage</option>
+      <option value="14" selected>Letzte 14 Tage</option>
+      <option value="30">Letzte 30 Tage</option>
+    </select>
+    <div class="filter-hint" id="offenHint"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">📋 Einträge</div></div>
+    <div class="ze-list" id="zeList"></div>
+
+    <div class="add-panel">
+      <div class="add-panel-label">Manuell nachtragen</div>
+      <select id="addMa"></select>
+      <select id="addAbt"></select>
+      <div></div>
+      <input type="datetime-local" id="addKommen">
+      <input type="datetime-local" id="addGehen">
+      <button class="btn btn-primary btn-sm" onclick="addEintrag()">+ Nachtragen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var ADMIN_FN_URL = "https://ysqzdqazcgyuzdorauiq.supabase.co/functions/v1/sg-admin";
+var SUPABASE_ANON_KEY = "sb_publishable_v4kXJa0y-2EHsCFPqBFHfg_QvzKLnt2";
+var PW_STORAGE_KEY = "sg_admin_pw";
+
+var STATE = { abteilungen: [], mitarbeiter: [], eintraege: [], pw: null };
+
+function call(action, payload) {
+  return fetch(ADMIN_FN_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
+    body: JSON.stringify({ password: STATE.pw, action: action, payload: payload || {} })
+  }).then(function(r) {
+    if (r.status === 401) { sessionStorage.removeItem(PW_STORAGE_KEY); showGate("Passwort abgelaufen, bitte erneut eingeben."); throw new Error("unauthorized"); }
+    return r.json();
+  });
+}
+
+function showGate(err) { document.getElementById('gate').style.display = 'flex'; document.getElementById('gateError').textContent = err || ''; }
+function hideGate() { document.getElementById('gate').style.display = 'none'; }
+
+function checkGate() {
+  var pw = document.getElementById('gatePw').value;
+  if (!pw) return;
+  STATE.pw = pw;
+  document.getElementById('gateError').textContent = '';
+  call('list_abteilungen').then(function(res) {
+    if (res.error) { showGate(res.error); STATE.pw = null; return; }
+    sessionStorage.setItem(PW_STORAGE_KEY, pw);
+    hideGate();
+    loadAll();
+  }).catch(function() {});
+}
+
+function setSaving(on) {
+  var dot = document.getElementById('saveDot'), txt = document.getElementById('saveText');
+  if (on) { dot.className = 'save-dot saving'; txt.textContent = 'Speichert…'; }
+  else { dot.className = 'save-dot'; txt.textContent = 'Gespeichert'; }
+}
+
+function toLocalInput(iso) {
+  if (!iso) return '';
+  var d = new Date(iso);
+  var pad = function(n){ return (n<10?'0':'')+n; };
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+function fromLocalInput(val) { return val ? new Date(val).toISOString() : null; }
+
+function maById(id) { return STATE.mitarbeiter.find(function(m){return m.id===id;}); }
+function abtById(id) { return STATE.abteilungen.find(function(a){return a.id===id;}); }
+
+function loadAll() {
+  Promise.all([ call('list_abteilungen'), call('list_mitarbeiter') ]).then(function(res) {
+    STATE.abteilungen = (res[0] && res[0].data) || [];
+    STATE.mitarbeiter = (res[1] && res[1].data) || [];
+    STATE.abteilungen.sort(function(a,b){ return (a.sortierung||0) - (b.sortierung||0); });
+    STATE.mitarbeiter.sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
+    fillFilters();
+    loadZeitraum();
+  }).catch(function(e){ console.error(e); });
+}
+
+function fillFilters() {
+  var fSel = document.getElementById('filterAbt');
+  fSel.innerHTML = '<option value="">Alle Abteilungen</option>' + STATE.abteilungen.map(function(a){ return '<option value="' + a.id + '">' + a.name + '</option>'; }).join('');
+
+  var addMa = document.getElementById('addMa');
+  addMa.innerHTML = STATE.mitarbeiter.filter(function(m){return m.aktiv;}).map(function(m){ return '<option value="' + m.id + '" data-abt="' + m.abteilung_id + '">' + m.name + '</option>'; }).join('');
+  var addAbt = document.getElementById('addAbt');
+  addAbt.innerHTML = STATE.abteilungen.filter(function(a){return a.aktiv;}).map(function(a){ return '<option value="' + a.id + '">' + a.name + '</option>'; }).join('');
+}
+
+function onZeitraumChange() { loadZeitraum(); }
+
+function loadZeitraum() {
+  var tage = parseInt(document.getElementById('filterZeitraum').value, 10);
+  var von = new Date(); von.setDate(von.getDate() - tage); von.setHours(0,0,0,0);
+  call('list_zeiterfassung', { von: von.toISOString() }).then(function(res) {
+    STATE.eintraege = (res && res.data) || [];
+    renderList();
+  }).catch(function(e){ console.error(e); });
+}
+
+function renderList() {
+  var abtFilter = document.getElementById('filterAbt').value;
+  var list = document.getElementById('zeList');
+  var eintraege = STATE.eintraege.filter(function(e) { return !abtFilter || e.abteilung_id === abtFilter; });
+
+  var offenCount = eintraege.filter(function(e){return !e.gehen;}).length;
+  document.getElementById('offenHint').textContent = offenCount ? offenCount + ' offene(r) Eintrag/Einträge (kein Auschecken erfasst)' : '';
+
+  var html = '<div class="ze-row header"><div>Mitarbeiter</div><div>Abteilung</div><div>Kommen</div><div>Gehen</div><div>Dauer</div><div></div></div>';
+  if (!eintraege.length) { list.innerHTML = html + '<div class="empty-hint">Keine Einträge im gewählten Zeitraum.</div>'; return; }
+
+  eintraege.forEach(function(e) {
+    var m = maById(e.mitarbeiter_id), a = abtById(e.abteilung_id);
+    var abtOptions = STATE.abteilungen.map(function(x){ return '<option value="' + x.id + '"' + (x.id===e.abteilung_id?' selected':'') + '>' + x.name + '</option>'; }).join('');
+    var dauer = e.gehen ? (((new Date(e.gehen) - new Date(e.kommen)) / 3600000).toFixed(1) + ' Std') : '';
+
+    html += '<div class="ze-row' + (!e.gehen ? ' offen' : '') + '">'
+      + '<div><div class="ze-name">' + (m?m.name:'Unbekannt') + '</div><div class="ze-abt">' + (e.quelle||'') + '</div></div>'
+      + '<div><select onchange="updateEintrag(\'' + e.id + '\',{abteilung_id:this.value})">' + abtOptions + '</select></div>'
+      + '<div><input type="datetime-local" value="' + toLocalInput(e.kommen) + '" onchange="updateEintrag(\'' + e.id + '\',{kommen:fromLocalInput(this.value)})"></div>'
+      + '<div><input type="datetime-local" value="' + toLocalInput(e.gehen) + '" onchange="updateEintrag(\'' + e.id + '\',{gehen:fromLocalInput(this.value)})"></div>'
+      + '<div class="ze-dauer">' + (e.gehen ? dauer : '<span class="ze-offen-badge">offen</span>') + '</div>'
+      + '<div><button class="btn btn-danger btn-sm" onclick="deleteEintrag(\'' + e.id + '\')">Löschen</button></div>'
+      + '</div>';
+  });
+  list.innerHTML = html;
+}
+
+function updateEintrag(id, patch) {
+  if (patch.gehen === undefined) {} // no-op guard
+  setSaving(true);
+  call('update_zeiterfassung', { id: id, patch: patch }).then(function(res) {
+    if (res.error) { alert('Fehler: ' + res.error); setSaving(false); return; }
+    var e = STATE.eintraege.find(function(x){return x.id===id;});
+    if (e) for (var k in patch) e[k] = patch[k];
+    renderList(); setSaving(false);
+  }).catch(function(e){ console.error(e); setSaving(false); });
+}
+
+function deleteEintrag(id) {
+  if (!confirm('Diesen Eintrag wirklich löschen?')) return;
+  setSaving(true);
+  call('delete_zeiterfassung', { id: id }).then(function() { loadZeitraum(); setSaving(false); }).catch(function(e){ console.error(e); setSaving(false); });
+}
+
+function addEintrag() {
+  var maSel = document.getElementById('addMa'), abtSel = document.getElementById('addAbt');
+  var kommenVal = document.getElementById('addKommen').value, gehenVal = document.getElementById('addGehen').value;
+  if (!maSel.value || !kommenVal) { alert('Bitte Mitarbeiter und Kommen-Zeit angeben.'); return; }
+  setSaving(true);
+  call('add_zeiterfassung', {
+    mitarbeiter_id: maSel.value,
+    abteilung_id: abtSel.value,
+    kommen: fromLocalInput(kommenVal),
+    gehen: gehenVal ? fromLocalInput(gehenVal) : null
+  }).then(function(res) {
+    if (res.error) { alert('Fehler: ' + res.error); setSaving(false); return; }
+    document.getElementById('addKommen').value = ''; document.getElementById('addGehen').value = '';
+    loadZeitraum(); setSaving(false);
+  }).catch(function(e){ console.error(e); setSaving(false); });
+}
+
+// Vorauswahl: bei MA-Wechsel dessen Hauptabteilung im Add-Panel setzen
+document.addEventListener('DOMContentLoaded', function() {
+  var maSel = document.getElementById('addMa');
+  maSel.addEventListener('change', function() {
+    var opt = maSel.selectedOptions[0];
+    if (opt) document.getElementById('addAbt').value = opt.dataset.abt;
+  });
+});
+
+var savedPw = sessionStorage.getItem(PW_STORAGE_KEY);
+if (savedPw) {
+  STATE.pw = savedPw;
+  call('list_abteilungen').then(function(res) {
+    if (res.error) { sessionStorage.removeItem(PW_STORAGE_KEY); STATE.pw = null; showGate(); }
+    else { hideGate(); loadAll(); }
+  }).catch(function(){ showGate(); });
+} else {
+  showGate();
+}
+</script>
+</body>
+</html>
