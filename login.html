@@ -1,4 +1,4 @@
-<!-- build: 2026-07-17-2 -->
+<!-- build: 2026-07-17-3 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -102,12 +102,28 @@
   .confirm-card.gehen .confirm-time { color: var(--yellow); }
   .confirm-close { margin-top: 8px; padding: 10px 24px; border-radius: 10px; border: none; background: var(--surface2); color: var(--text); font-size: 13px; font-weight: 500; cursor: pointer; }
 
+  /* QR-GATE SPERRBILDSCHIRM */
+  .qrgate { position: fixed; inset: 0; background: var(--bg); display: none; align-items: center; justify-content: center; z-index: 998; padding: 24px; }
+  .qrgate.show { display: flex; }
+  .qrgate-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 36px 28px; max-width: 340px; width: 100%; text-align: center; }
+  .qrgate-icon { font-size: 48px; margin-bottom: 14px; }
+  .qrgate-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .qrgate-sub { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 </style>
 </head>
 <body>
+
+<div class="qrgate" id="qrgate">
+  <div class="qrgate-card">
+    <div class="qrgate-icon">📷</div>
+    <div class="qrgate-title">QR-Code scannen</div>
+    <div class="qrgate-sub">Bitte den Zugangs-Code am Werkstatt-Eingang scannen, um dich einzuloggen.</div>
+  </div>
+</div>
 
 <div class="topbar">
   <div class="logo"><div class="logo-icon">🔐</div> RC Login <span>Zeiterfassung</span></div>
@@ -133,12 +149,49 @@
 var SUPABASE_URL = "https://ysqzdqazcgyuzdorauiq.supabase.co";
 var SUPABASE_ANON_KEY = "sb_publishable_v4kXJa0y-2EHsCFPqBFHfg_QvzKLnt2";
 
-var STATE = { abteilungen: [], mitarbeiter: [], offeneEintraege: {} };
+var STATE = { abteilungen: [], mitarbeiter: [], offeneEintraege: {}, gateOk: false };
+var GATE_SESSION_KEY = "sg_gate_ok";
 
 function sbHeaders(extra) {
   var h = { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY, "Content-Type": "application/json" };
   if (extra) for (var k in extra) h[k] = extra[k];
   return h;
+}
+
+function showQrGate() {
+  document.getElementById('qrgate').className = 'qrgate show';
+  document.querySelector('.main').style.display = 'none';
+}
+function hideQrGate() {
+  document.getElementById('qrgate').className = 'qrgate';
+  document.querySelector('.main').style.display = '';
+}
+
+function checkGateAccess() {
+  if (sessionStorage.getItem(GATE_SESSION_KEY) === '1') {
+    STATE.gateOk = true;
+    hideQrGate();
+    loadAll();
+    return;
+  }
+  var params = new URLSearchParams(window.location.search);
+  var g = params.get('g');
+  if (!g) { showQrGate(); return; }
+
+  fetch(SUPABASE_URL + "/rest/v1/sg_settings?select=gate_token&id=eq.1", { headers: sbHeaders() })
+    .then(function(r){ return r.json(); })
+    .then(function(rows) {
+      var current = rows && rows[0] && rows[0].gate_token;
+      if (current && g === current) {
+        sessionStorage.setItem(GATE_SESSION_KEY, '1');
+        STATE.gateOk = true;
+        hideQrGate();
+        loadAll();
+      } else {
+        showQrGate();
+      }
+    })
+    .catch(function(e) { console.error('Gate-Check fehlgeschlagen:', e); showQrGate(); });
 }
 
 function initials(name) {
@@ -243,8 +296,9 @@ function closeOverlay() {
   document.getElementById('overlay').className = 'overlay';
 }
 
-loadAll();
-setInterval(loadAll, 30000);
+document.querySelector('.main').style.display = 'none';
+checkGateAccess();
+setInterval(function() { if (STATE.gateOk) loadAll(); }, 30000);
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(function(e){ console.log('SW-Registrierung fehlgeschlagen:', e); });

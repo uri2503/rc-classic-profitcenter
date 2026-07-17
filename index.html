@@ -1,4 +1,4 @@
-<!-- build: 2026-07-17-4 -->
+<!-- build: 2026-07-17-5 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -159,6 +159,18 @@
       <button class="btn btn-primary" onclick="addMitarbeiter()">+ Anlegen</button>
     </div>
   </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">🔳 Werkstatt-Zugang (QR-Code)</div></div>
+    <div style="padding:20px;display:flex;gap:24px;align-items:center;flex-wrap:wrap">
+      <img id="gateQrImg" src="" alt="QR-Code" style="width:180px;height:180px;border-radius:12px;background:white;padding:8px;display:none">
+      <div style="flex:1;min-width:200px">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Dieser QR-Code hängt am Werkstatt-Eingang. MA scannen ihn einmal pro Login-Sitzung, um sich in die Zeiterfassung einloggen zu können.</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted);word-break:break-all;margin-bottom:12px" id="gateUrlText">–</div>
+        <button class="btn btn-ghost btn-sm" onclick="rotateGateToken()">🔄 Neuen Code generieren</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -195,6 +207,7 @@ function checkGate() {
     sessionStorage.setItem(PW_STORAGE_KEY, pw);
     hideGate();
     loadAll();
+    loadGateToken();
   }).catch(function() {});
 }
 
@@ -322,12 +335,43 @@ function updateMitarbeiter(id, patch) {
 
 function toggleMitarbeiter(id, newVal) { updateMitarbeiter(id, { aktiv: newVal }); setTimeout(render, 200); }
 
+// ── ZUGANGS-QR-CODE ──────────────────────────────────
+var LOGIN_URL_BASE = window.location.href.replace(/index\.html.*$/, 'login.html');
+
+function loadGateToken() {
+  fetch("https://ysqzdqazcgyuzdorauiq.supabase.co/rest/v1/sg_settings?select=gate_token&id=eq.1", {
+    headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY }
+  }).then(function(r){ return r.json(); }).then(function(rows) {
+    var token = rows && rows[0] && rows[0].gate_token;
+    if (token) renderGateQr(token);
+  }).catch(function(e){ console.error(e); });
+}
+
+function renderGateQr(token) {
+  var url = LOGIN_URL_BASE + '?g=' + token;
+  var img = document.getElementById('gateQrImg');
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(url);
+  img.style.display = 'block';
+  document.getElementById('gateUrlText').textContent = url;
+}
+
+function rotateGateToken() {
+  if (!confirm('Neuen Zugangscode generieren? Der alte QR-Code (falls ausgedruckt) funktioniert danach nicht mehr.')) return;
+  setSaving(true);
+  call('rotate_gate_token').then(function(res) {
+    if (res.error) { alert('Fehler: ' + res.error); setSaving(false); return; }
+    var token = res.data && res.data[0] && res.data[0].gate_token;
+    if (token) renderGateQr(token);
+    setSaving(false);
+  }).catch(function(e){ console.error(e); setSaving(false); });
+}
+
 var savedPw = sessionStorage.getItem(PW_STORAGE_KEY);
 if (savedPw) {
   STATE.pw = savedPw;
   call('list_abteilungen').then(function(res) {
     if (res.error) { sessionStorage.removeItem(PW_STORAGE_KEY); STATE.pw = null; showGate(); }
-    else { hideGate(); loadAll(); }
+    else { hideGate(); loadAll(); loadGateToken(); }
   }).catch(function(){ showGate(); });
 } else {
   showGate();
