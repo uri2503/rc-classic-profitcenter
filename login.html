@@ -1,4 +1,4 @@
-<!-- build: 2026-07-17-9 -->
+<!-- build: 2026-07-17-10 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -159,7 +159,7 @@
   </div>
 
   <div id="listView">
-    <div class="usage-hint">👉 Tippe deinen Namen an, um dich ein- oder auszuchecken.</div>
+    <div class="usage-hint" id="usageHint">👉 Tippe deinen Namen an, um dich einzuchecken oder auszuchecken.</div>
     <input type="text" class="search-box" id="searchBox" placeholder="Name suchen…" oninput="renderList()">
     <div class="ma-grid" id="maGrid"></div>
   </div>
@@ -179,8 +179,7 @@
 var SUPABASE_URL = "https://ysqzdqazcgyuzdorauiq.supabase.co";
 var SUPABASE_ANON_KEY = "sb_publishable_v4kXJa0y-2EHsCFPqBFHfg_QvzKLnt2";
 
-var STATE = { abteilungen: [], mitarbeiter: [], offeneEintraege: {}, gateOk: false };
-var GATE_SESSION_KEY = "sg_gate_ok";
+var STATE = { abteilungen: [], mitarbeiter: [], offeneEintraege: {}, mode: null };
 var DEVICE_MA_KEY = "sg_my_ma_id"; // localStorage: persistiert auf DIESEM Geraet, ueberlebt App-Neustart
 
 function sbHeaders(extra) {
@@ -189,8 +188,9 @@ function sbHeaders(extra) {
   return h;
 }
 
-function showQrGate() {
+function showQrGate(msg) {
   document.getElementById('qrgate').className = 'qrgate show';
+  if (msg) document.querySelector('.qrgate-sub').textContent = msg;
   document.querySelector('.main').style.display = 'none';
 }
 function hideQrGate() {
@@ -198,29 +198,19 @@ function hideQrGate() {
   document.querySelector('.main').style.display = '';
 }
 
+// Jede Aktion braucht einen frischen, richtungsspezifischen Scan -- kein Merken der Sitzung mehr.
 function checkGateAccess() {
-  if (sessionStorage.getItem(GATE_SESSION_KEY) === '1') {
-    STATE.gateOk = true;
-    hideQrGate();
-    loadAll();
-    return;
-  }
   var params = new URLSearchParams(window.location.search);
   var g = params.get('g');
   if (!g) { showQrGate(); return; }
 
-  fetch(SUPABASE_URL + "/rest/v1/sg_settings?select=gate_token&id=eq.1", { headers: sbHeaders(), cache: "no-store" })
+  fetch(SUPABASE_URL + "/rest/v1/sg_settings?select=gate_token_in,gate_token_out&id=eq.1", { headers: sbHeaders(), cache: "no-store" })
     .then(function(r){ return r.json(); })
     .then(function(rows) {
-      var current = rows && rows[0] && rows[0].gate_token;
-      if (current && g === current) {
-        sessionStorage.setItem(GATE_SESSION_KEY, '1');
-        STATE.gateOk = true;
-        hideQrGate();
-        loadAll();
-      } else {
-        showQrGate();
-      }
+      var row = rows && rows[0];
+      if (row && g === row.gate_token_in) { STATE.mode = 'in'; hideQrGate(); loadAll(); }
+      else if (row && g === row.gate_token_out) { STATE.mode = 'out'; hideQrGate(); loadAll(); }
+      else { showQrGate('Ungültiger Code. Bitte den offiziellen QR-Code am Eingang bzw. Ausgang scannen.'); }
     })
     .catch(function(e) { console.error('Gate-Check fehlgeschlagen:', e); showQrGate(); });
 }
@@ -255,6 +245,10 @@ function loadAll() {
 }
 
 function decideScreen() {
+  document.getElementById('usageHint').textContent = STATE.mode === 'in'
+    ? '👉 Tippe deinen Namen an, um dich einzuchecken.'
+    : '👉 Tippe deinen Namen an, um dich auszuchecken.';
+
   var myId = localStorage.getItem(DEVICE_MA_KEY);
   var m = myId ? STATE.mitarbeiter.find(function(x){return x.id===myId;}) : null;
   if (m) { renderRecognized(m); } else { showListView(); renderList(); }
@@ -277,16 +271,31 @@ function renderRecognized(m) {
 
   var statusEl = document.getElementById('recStatus');
   var btnEl = document.getElementById('recBtn');
-  if (offen) {
-    statusEl.textContent = '● Anwesend seit ' + timeSince(offen.kommen);
-    statusEl.className = 'recognized-status anwesend';
-    btnEl.textContent = '👋 Jetzt auschecken';
-    btnEl.className = 'recognized-btn gehen';
+
+  if (STATE.mode === 'in') {
+    if (offen) {
+      statusEl.textContent = '● Bereits anwesend seit ' + timeSince(offen.kommen);
+      statusEl.className = 'recognized-status anwesend';
+      btnEl.style.display = 'none';
+    } else {
+      statusEl.textContent = 'Aktuell nicht eingecheckt';
+      statusEl.className = 'recognized-status';
+      btnEl.style.display = '';
+      btnEl.textContent = '✅ Jetzt einchecken';
+      btnEl.className = 'recognized-btn';
+    }
   } else {
-    statusEl.textContent = 'Aktuell nicht eingecheckt';
-    statusEl.className = 'recognized-status';
-    btnEl.textContent = '✅ Jetzt einchecken';
-    btnEl.className = 'recognized-btn';
+    if (offen) {
+      statusEl.textContent = '● Anwesend seit ' + timeSince(offen.kommen);
+      statusEl.className = 'recognized-status anwesend';
+      btnEl.style.display = '';
+      btnEl.textContent = '👋 Jetzt auschecken';
+      btnEl.className = 'recognized-btn gehen';
+    } else {
+      statusEl.textContent = 'Du bist aktuell nicht eingecheckt';
+      statusEl.className = 'recognized-status';
+      btnEl.style.display = 'none';
+    }
   }
 }
 
@@ -337,20 +346,26 @@ function renderList() {
 function handleTap(maId) {
   var m = STATE.mitarbeiter.find(function(x){return x.id===maId;});
   if (!m) return;
+  var offen = STATE.offeneEintraege[maId];
+
+  // Richtung wird durch den gescannten QR-Code bestimmt, nicht durch den aktuellen Status.
+  if (STATE.mode === 'in' && offen) { alert(m.name + ' ist bereits eingecheckt (seit ' + timeSince(offen.kommen) + ').'); return; }
+  if (STATE.mode === 'out' && !offen) { alert(m.name + ' ist aktuell nicht eingecheckt.'); return; }
+
   showAskConfirm(m);
 }
 
 function showAskConfirm(m) {
-  var offen = STATE.offeneEintraege[m.id];
+  var isEinchecken = STATE.mode === 'in';
   var card = document.getElementById('confirmCard');
-  card.className = 'confirm-card ask' + (offen ? ' gehen' : '');
-  document.getElementById('confirmIcon').textContent = offen ? '👋' : '✅';
+  card.className = 'confirm-card ask' + (isEinchecken ? '' : ' gehen');
+  document.getElementById('confirmIcon').textContent = isEinchecken ? '✅' : '👋';
   document.getElementById('confirmTitle').textContent = 'Bist du sicher?';
   document.getElementById('confirmSub').textContent = m.name + ' · ' + abtName(m.abteilung_id);
-  document.getElementById('confirmTime').textContent = offen ? 'Jetzt auschecken' : 'Jetzt einchecken';
+  document.getElementById('confirmTime').textContent = isEinchecken ? 'Jetzt einchecken' : 'Jetzt auschecken';
   document.getElementById('confirmActions').innerHTML =
     '<button class="confirm-close" onclick="closeOverlay()">Abbrechen</button>'
-    + '<button class="confirm-yes" onclick="doBooking(\'' + m.id + '\')">Ja, ' + (offen ? 'auschecken' : 'einchecken') + '</button>';
+    + '<button class="confirm-yes" onclick="doBooking(\'' + m.id + '\')">Ja, ' + (isEinchecken ? 'einchecken' : 'auschecken') + '</button>';
   document.getElementById('overlay').className = 'overlay show';
 }
 
@@ -359,10 +374,10 @@ var CHECKIN_FN_URL = "https://ysqzdqazcgyuzdorauiq.supabase.co/functions/v1/sg-c
 function doBooking(maId) {
   var m = STATE.mitarbeiter.find(function(x){return x.id===maId;});
   if (!m) return;
-  var offen = STATE.offeneEintraege[maId];
 
-  if (offen) {
-    // GEHEN
+  if (STATE.mode === 'out') {
+    var offen = STATE.offeneEintraege[maId];
+    if (!offen) { alert('Kein offener Eintrag gefunden.'); closeOverlay(); return; }
     fetch(CHECKIN_FN_URL, {
       method: "POST", headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
       body: JSON.stringify({ action: "checkout", payload: { id: offen.id, mitarbeiter_id: maId } })
@@ -372,10 +387,8 @@ function doBooking(maId) {
         delete STATE.offeneEintraege[maId];
         localStorage.setItem(DEVICE_MA_KEY, maId);
         showResult(m, false);
-        decideScreen();
       }).catch(function(e){ console.error(e); alert('Fehler beim Auschecken (Netzwerk).'); });
   } else {
-    // KOMMEN
     fetch(CHECKIN_FN_URL, {
       method: "POST", headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
       body: JSON.stringify({ action: "checkin", payload: { mitarbeiter_id: maId, abteilung_id: m.abteilung_id } })
@@ -385,7 +398,6 @@ function doBooking(maId) {
         if (res.body.data && res.body.data[0]) STATE.offeneEintraege[maId] = res.body.data[0];
         localStorage.setItem(DEVICE_MA_KEY, maId);
         showResult(m, true);
-        decideScreen();
       }).catch(function(e){ console.error(e); alert('Fehler beim Einchecken (Netzwerk).'); });
   }
 }
@@ -397,7 +409,7 @@ function showResult(m, isKommen) {
   document.getElementById('confirmTitle').textContent = isKommen ? 'Eingecheckt' : 'Ausgecheckt — schönen Feierabend!';
   document.getElementById('confirmSub').textContent = m.name + ' · ' + abtName(m.abteilung_id);
   document.getElementById('confirmTime').textContent = new Date().toLocaleTimeString('de-DE');
-  var hint = isKommen ? 'Du kannst diese Seite jetzt schließen. Zum Auschecken später einfach nochmal deinen Namen antippen.' : 'Du kannst diese Seite jetzt schließen.';
+  var hint = isKommen ? 'Du kannst diese Seite jetzt schließen. Zum Auschecken später den QR-Code am Ausgang scannen.' : 'Du kannst diese Seite jetzt schließen.';
   document.getElementById('confirmActions').innerHTML = '<div class="confirm-hint">' + hint + '</div><button class="confirm-close" onclick="closeOverlay()">Fertig</button>';
   document.getElementById('overlay').className = 'overlay show';
 }
@@ -408,7 +420,6 @@ function closeOverlay() {
 
 document.querySelector('.main').style.display = 'none';
 checkGateAccess();
-setInterval(function() { if (STATE.gateOk) loadAll(); }, 30000);
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(function(e){ console.log('SW-Registrierung fehlgeschlagen:', e); });
