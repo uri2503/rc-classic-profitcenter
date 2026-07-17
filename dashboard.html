@@ -1,4 +1,4 @@
-<!-- build: 2026-07-17-4 -->
+<!-- build: 2026-07-17-5 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -234,7 +234,7 @@ function loadZeiterfassung() {
 
 // Anwesenheit ist unkritisch (kein Stundensatz) -> direkt public lesbar, kein Passwort-Overhead noetig
 function loadAnwesend() {
-  fetch(SUPABASE_URL + "/rest/v1/sg_zeiterfassung?select=*&gehen=is.null&_=" + Date.now(), { headers: sbHeaders(), cache: "no-store" })
+  fetch(SUPABASE_URL + "/rest/v1/sg_zeiterfassung?select=*&gehen=is.null", { headers: sbHeaders(), cache: "no-store" })
     .then(function(r){ return r.json(); })
     .then(function(data) { renderAnwesend(data || []); })
     .catch(function(e){ console.error(e); });

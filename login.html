@@ -1,4 +1,4 @@
-<!-- build: 2026-07-17-7 -->
+<!-- build: 2026-07-17-8 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -209,7 +209,7 @@ function checkGateAccess() {
   var g = params.get('g');
   if (!g) { showQrGate(); return; }
 
-  fetch(SUPABASE_URL + "/rest/v1/sg_settings?select=gate_token&id=eq.1&_=" + Date.now(), { headers: sbHeaders(), cache: "no-store" })
+  fetch(SUPABASE_URL + "/rest/v1/sg_settings?select=gate_token&id=eq.1", { headers: sbHeaders(), cache: "no-store" })
     .then(function(r){ return r.json(); })
     .then(function(rows) {
       var current = rows && rows[0] && rows[0].gate_token;
@@ -239,9 +239,9 @@ setInterval(updateClock, 1000);
 
 function loadAll() {
   Promise.all([
-    fetch(SUPABASE_URL + "/rest/v1/sg_abteilungen?select=*&aktiv=eq.true&_=" + Date.now(), { headers: sbHeaders(), cache: "no-store" }).then(function(r){return r.json();}),
-    fetch(SUPABASE_URL + "/rest/v1/sg_mitarbeiter_public?select=*&aktiv=eq.true&order=name.asc&_=" + Date.now(), { headers: sbHeaders(), cache: "no-store" }).then(function(r){return r.json();}),
-    fetch(SUPABASE_URL + "/rest/v1/sg_zeiterfassung?select=*&gehen=is.null&_=" + Date.now(), { headers: sbHeaders(), cache: "no-store" }).then(function(r){return r.json();})
+    fetch(SUPABASE_URL + "/rest/v1/sg_abteilungen?select=*&aktiv=eq.true", { headers: sbHeaders(), cache: "no-store" }).then(function(r){return r.json();}),
+    fetch(SUPABASE_URL + "/rest/v1/sg_mitarbeiter_public?select=*&aktiv=eq.true&order=name.asc", { headers: sbHeaders(), cache: "no-store" }).then(function(r){return r.json();}),
+    fetch(SUPABASE_URL + "/rest/v1/sg_zeiterfassung?select=*&gehen=is.null", { headers: sbHeaders(), cache: "no-store" }).then(function(r){return r.json();})
   ]).then(function(res) {
     STATE.abteilungen = res[0] || [];
     STATE.mitarbeiter = res[1] || [];
