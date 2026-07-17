@@ -1,4 +1,4 @@
-<!-- build: 2026-07-17-5 -->
+<!-- build: 2026-07-17-6 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -336,7 +336,11 @@ function updateMitarbeiter(id, patch) {
 function toggleMitarbeiter(id, newVal) { updateMitarbeiter(id, { aktiv: newVal }); setTimeout(render, 200); }
 
 // ── ZUGANGS-QR-CODE ──────────────────────────────────
-var LOGIN_URL_BASE = window.location.href.replace(/index\.html.*$/, 'login.html');
+var LOGIN_URL_BASE = (function() {
+  var path = window.location.pathname;
+  var dir = path.endsWith('/') ? path : path.substring(0, path.lastIndexOf('/') + 1);
+  return window.location.origin + dir + 'login.html';
+})();
 
 function loadGateToken() {
   fetch("https://ysqzdqazcgyuzdorauiq.supabase.co/rest/v1/sg_settings?select=gate_token&id=eq.1", {
