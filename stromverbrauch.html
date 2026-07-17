@@ -1,0 +1,583 @@
+<!-- build: 2026-07-18-2 -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stromverbrauch — Profitcenter Riedel Classics</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg:        #0d0f14;
+    --surface:   #141820;
+    --surface2:  #1c2230;
+    --border:    #252d3d;
+    --accent:    #3b82f6;
+    --accent2:   #1d4ed8;
+    --green:     #22c55e;
+    --yellow:    #f59e0b;
+    --red:       #ef4444;
+    --text:      #e8eaf0;
+    --muted:     #6b7a99;
+    --mono:      'JetBrains Mono', monospace;
+    --sans:      'Inter', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; font-size: 14px; }
+
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 56px; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; letter-spacing: -0.3px; }
+  .logo-icon { width: 30px; height: 30px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .logo span { color: var(--muted); font-weight: 400; margin-left: 4px; }
+  .nav-link { font-size: 13px; color: var(--muted); text-decoration: none; padding: 7px 12px; border-radius: 8px; }
+  .nav-link:hover { background: var(--surface2); color: var(--text); }
+
+  .main { max-width: 1000px; margin: 0 auto; padding: 24px; }
+  .page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .page-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .card-title { font-size: 13px; font-weight: 600; }
+  .card-body { padding: 16px; }
+
+  .btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .mode-tab.active { background: rgba(59,130,246,0.15); color: var(--accent); border-color: rgba(59,130,246,0.3); }
+
+  .file-drop { border: 2px dashed var(--border); border-radius: 10px; padding: 28px; text-align: center; cursor: pointer; }
+  .file-drop:hover { border-color: var(--accent); }
+  .file-drop input { display: none; }
+  .file-drop-label { font-size: 13px; color: var(--muted); }
+  .file-name { font-family: var(--mono); font-size: 12px; color: var(--accent); margin-top: 8px; }
+
+  .preview-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px; }
+  .preview-table th, .preview-table td { padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--border); font-family: var(--mono); }
+  .preview-table th { color: var(--muted); font-weight: 600; }
+
+  .col-select-row { display: flex; gap: 16px; margin-top: 14px; flex-wrap: wrap; }
+  .col-select { display: flex; flex-direction: column; gap: 4px; }
+  .col-select label { font-size: 11px; color: var(--muted); }
+  .col-select select { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px; }
+
+  .info-hint { font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 10px; }
+
+  .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+  .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .kpi-label { font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .kpi-value { font-size: 22px; font-weight: 700; font-family: var(--mono); line-height: 1; }
+
+  .abt-bar-list { padding: 4px; display: flex; flex-direction: column; gap: 12px; }
+  .abt-bar-row { display: flex; align-items: center; gap: 12px; }
+  .abt-bar-label { width: 170px; flex-shrink: 0; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+  .abt-bar-swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .abt-bar-track { flex: 1; height: 20px; background: var(--surface2); border-radius: 6px; overflow: hidden; }
+  .abt-bar-fill { height: 100%; border-radius: 6px; background: var(--accent); }
+  .abt-bar-value { width: 140px; text-align: right; font-family: var(--mono); font-size: 12px; color: var(--muted); flex-shrink: 0; }
+
+  .apply-row { display: flex; gap: 8px; align-items: center; margin-top: 16px; flex-wrap: wrap; }
+  .apply-row select { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px; flex: 1; min-width: 200px; }
+
+  .gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 999; padding: 24px; }
+  .gate-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 32px 28px; max-width: 320px; width: 100%; text-align: center; }
+  .gate-icon { font-size: 40px; margin-bottom: 12px; }
+  .gate-title { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .gate-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+  .gate-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 12px 14px; font-size: 15px; margin-bottom: 12px; text-align: center; }
+  .gate-error { color: var(--red); font-size: 12px; margin-bottom: 10px; min-height: 16px; }
+  .gate-btn { width: 100%; padding: 12px; border-radius: 10px; border: none; background: var(--accent); color: white; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+  .empty-hint { padding: 24px; text-align: center; color: var(--muted); font-size: 13px; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-icon">🔒</div>
+    <div class="gate-title">Chef-Zugang</div>
+    <div class="gate-sub">Stromverbrauch ist passwortgeschützt</div>
+    <input type="password" class="gate-input" id="gatePw" placeholder="Passwort" onkeydown="if(event.key==='Enter')checkGate()">
+    <div class="gate-error" id="gateError"></div>
+    <button class="gate-btn" onclick="checkGate()">Entsperren</button>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="logo"><div class="logo-icon">🔐</div> SmartGate <span>/ Profitcenter · Riedel Classics</span></div>
+  <div style="display:flex;align-items:center;gap:16px">
+    <a class="nav-link" href="index.html">⚙️ Stammdaten</a>
+    <a class="nav-link" href="dashboard.html">📊 Dashboard</a>
+    <a class="nav-link" href="kostenschluessel.html">🧮 Kostenschlüssel</a>
+  </div>
+</div>
+
+<div class="main">
+  <div class="page-title">Stromverbrauch-Zuordnung</div>
+  <div class="page-sub">Minutengenaue Verbrauchsdaten importieren und anhand Anwesenheit + Abteilungsgewicht auf Abteilungen verteilen</div>
+
+  <div class="mode-tabs" style="display:flex;gap:4px;margin-bottom:16px">
+    <button class="btn btn-ghost btn-sm mode-tab active" id="tabCsv" onclick="setMode('csv')">📂 CSV-Import</button>
+    <button class="btn btn-ghost btn-sm mode-tab" id="tabManuell" onclick="setMode('manuell')">✍️ Manuell (Tageswerte)</button>
+  </div>
+
+  <div class="card" id="csvCard">
+    <div class="card-header"><div class="card-title">📂 CSV-Datei importieren</div></div>
+    <div class="card-body">
+      <div class="file-drop" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept=".csv,.txt" onchange="handleFile(this.files[0])">
+        <div class="file-drop-label">Tippen, um CSV-Datei vom Stromanbieter auszuwählen<br>(Zeitstempel + Verbrauchswert je Zeile)</div>
+        <div class="file-name" id="fileName"></div>
+      </div>
+
+      <div id="previewSection" style="display:none">
+        <table class="preview-table" id="previewTable"></table>
+        <div class="col-select-row">
+          <div class="col-select">
+            <label>Zeitstempel-Spalte</label>
+            <select id="colTimestamp" onchange="reprocess()"></select>
+          </div>
+          <div class="col-select">
+            <label>Verbrauchswert-Spalte</label>
+            <select id="colValue" onchange="reprocess()"></select>
+          </div>
+          <div class="col-select">
+            <label>Erste Zeile ist Kopfzeile</label>
+            <select id="colHeader" onchange="reprocess()">
+              <option value="1">Ja</option>
+              <option value="0">Nein</option>
+            </select>
+          </div>
+        </div>
+        <div class="info-hint" id="parseInfo"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="manuellCard" style="display:none">
+    <div class="card-header"><div class="card-title">✍️ Tageswerte manuell eintragen</div></div>
+    <div class="card-body">
+      <div class="info-hint">Trag die Werte ein, die du in deiner Stromanbieter-App siehst (z. B. Tagesansicht "Kosten" oder "Netzbezug"). Die Verteilung erfolgt dann auf Tagesbasis: je Tag wird geschaut, welche Abteilungen wie lange anwesend waren, gewichtet mit dem Stromgewicht.</div>
+      <table class="preview-table" id="manuellTable" style="margin-top:12px">
+        <tr><th>Datum</th><th>kWh oder €</th><th></th></tr>
+      </table>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <input type="date" id="manDate" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 10px;font-size:13px">
+        <input type="number" step="0.01" id="manValue" placeholder="Wert" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 10px;font-size:13px;width:110px">
+        <select id="manUnit" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 10px;font-size:13px">
+          <option value="kWh">kWh</option>
+          <option value="€">€</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="addManualRow()">+ Hinzufügen</button>
+      </div>
+      <div style="margin-top:14px"><button class="btn btn-ghost btn-sm" onclick="processManual()">Berechnen</button></div>
+    </div>
+  </div>
+
+  <div id="resultsSection" style="display:none">
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">Verarbeitete Werte</div>
+        <div class="kpi-value" id="kpiRows">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Zugeordnet (Betriebszeit)</div>
+        <div class="kpi-value" id="kpiZugeordnet">0 kWh</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Nicht zuordenbar</div>
+        <div class="kpi-value" id="kpiUnzugeordnet">0 kWh</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">⚡ Verteilung je Abteilung (gewichtet)</div></div>
+      <div class="abt-bar-list" id="abtBars" style="padding:16px"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">🧮 In Kostenschlüssel übernehmen</div></div>
+      <div class="card-body">
+        <div class="info-hint">Wählt eine bestehende Fixkosten-Position mit Umlage "manuell %" aus (z. B. deine Strom-Position) — die berechneten Prozentsätze werden dort eingetragen und überschreiben die bisherige manuelle Verteilung.</div>
+        <div class="apply-row">
+          <select id="targetFixkosten"></select>
+          <button class="btn btn-primary btn-sm" onclick="applyToKostenschluessel()">Übernehmen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var ADMIN_FN_URL = "https://ysqzdqazcgyuzdorauiq.supabase.co/functions/v1/sg-admin";
+var SUPABASE_ANON_KEY = "sb_publishable_v4kXJa0y-2EHsCFPqBFHfg_QvzKLnt2";
+var PW_STORAGE_KEY = "sg_admin_pw";
+
+var STATE = { abteilungen: [], zeiterfassung: [], pw: null, rawRows: [], fixkosten: [], manuellRows: [] };
+
+function setMode(mode) {
+  document.getElementById('csvCard').style.display = mode === 'csv' ? '' : 'none';
+  document.getElementById('manuellCard').style.display = mode === 'manuell' ? '' : 'none';
+  document.getElementById('tabCsv').className = 'btn btn-ghost btn-sm mode-tab' + (mode === 'csv' ? ' active' : '');
+  document.getElementById('tabManuell').className = 'btn btn-ghost btn-sm mode-tab' + (mode === 'manuell' ? ' active' : '');
+}
+
+function addManualRow() {
+  var dateEl = document.getElementById('manDate'), valEl = document.getElementById('manValue'), unitEl = document.getElementById('manUnit');
+  if (!dateEl.value || !valEl.value) { alert('Bitte Datum und Wert angeben.'); return; }
+  STATE.currentUnit = unitEl.value;
+  STATE.manuellRows.push({ date: dateEl.value, value: parseFloat(valEl.value) });
+  dateEl.value = ''; valEl.value = '';
+  renderManuellTable();
+}
+
+function removeManualRow(idx) {
+  STATE.manuellRows.splice(idx, 1);
+  renderManuellTable();
+}
+
+function renderManuellTable() {
+  var html = '<tr><th>Datum</th><th>kWh oder €</th><th></th></tr>';
+  STATE.manuellRows.forEach(function(row, i) {
+    html += '<tr><td>' + row.date + '</td><td>' + row.value + '</td><td><span style="color:var(--red);cursor:pointer" onclick="removeManualRow(' + i + ')">✕</span></td></tr>';
+  });
+  document.getElementById('manuellTable').innerHTML = html;
+}
+
+function processManual() {
+  if (!STATE.manuellRows.length) { alert('Bitte mindestens einen Tageswert eintragen.'); return; }
+  var dates = STATE.manuellRows.map(function(r){ return r.date; }).sort();
+  var von = new Date(dates[0] + 'T00:00:00'); von.setDate(von.getDate() - 1);
+  var bis = new Date(dates[dates.length-1] + 'T23:59:59'); bis.setDate(bis.getDate() + 1);
+
+  call('list_zeiterfassung', { von: von.toISOString(), bis: bis.toISOString() }).then(function(res) {
+    STATE.zeiterfassung = (res && res.data) || [];
+    correlateDaily();
+  }).catch(function(e){ console.error(e); });
+}
+
+function stundenUeberlappung(kommen, gehen, tagStart, tagEnde) {
+  var start = Math.max(kommen, tagStart);
+  var end = Math.min(gehen, tagEnde);
+  return end > start ? (end - start) / 3600000 : 0;
+}
+
+function correlateDaily() {
+  var byAbt = {};
+  STATE.abteilungen.forEach(function(a) { byAbt[a.id] = 0; });
+  var unzugeordnet = 0;
+
+  STATE.manuellRows.forEach(function(row) {
+    var tagStart = new Date(row.date + 'T00:00:00').getTime();
+    var tagEnde = new Date(row.date + 'T23:59:59').getTime();
+
+    var stundenJeAbt = {};
+    STATE.zeiterfassung.forEach(function(e) {
+      var kommen = new Date(e.kommen).getTime();
+      var gehen = e.gehen ? new Date(e.gehen).getTime() : Date.now();
+      var std = stundenUeberlappung(kommen, gehen, tagStart, tagEnde);
+      if (std > 0) stundenJeAbt[e.abteilung_id] = (stundenJeAbt[e.abteilung_id] || 0) + std;
+    });
+
+    var sumGewichtetStunden = 0;
+    Object.keys(stundenJeAbt).forEach(function(id) {
+      var a = STATE.abteilungen.find(function(x){return x.id===id;});
+      var w = (a && a.stromgewicht != null) ? a.stromgewicht : 1;
+      sumGewichtetStunden += stundenJeAbt[id] * w;
+    });
+
+    if (sumGewichtetStunden <= 0) { unzugeordnet += row.value; return; }
+
+    Object.keys(stundenJeAbt).forEach(function(id) {
+      var a = STATE.abteilungen.find(function(x){return x.id===id;});
+      var w = (a && a.stromgewicht != null) ? a.stromgewicht : 1;
+      var anteil = (stundenJeAbt[id] * w) / sumGewichtetStunden;
+      if (byAbt[id] == null) byAbt[id] = 0;
+      byAbt[id] += row.value * anteil;
+    });
+  });
+
+  STATE.lastResult = byAbt;
+  renderResults(STATE.manuellRows.length, byAbt, unzugeordnet);
+}
+
+function call(action, payload) {
+  return fetch(ADMIN_FN_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
+    body: JSON.stringify({ password: STATE.pw, action: action, payload: payload || {} })
+  }).then(function(r) {
+    if (r.status === 401) { sessionStorage.removeItem(PW_STORAGE_KEY); showGate("Passwort abgelaufen, bitte erneut eingeben."); throw new Error("unauthorized"); }
+    return r.json();
+  });
+}
+
+function showGate(err) { document.getElementById('gate').style.display = 'flex'; document.getElementById('gateError').textContent = err || ''; }
+function hideGate() { document.getElementById('gate').style.display = 'none'; }
+
+function checkGate() {
+  var pw = document.getElementById('gatePw').value;
+  if (!pw) return;
+  STATE.pw = pw;
+  document.getElementById('gateError').textContent = '';
+  call('list_abteilungen').then(function(res) {
+    if (res.error) { showGate(res.error); STATE.pw = null; return; }
+    sessionStorage.setItem(PW_STORAGE_KEY, pw);
+    hideGate();
+    loadInitial();
+  }).catch(function() {});
+}
+
+function loadInitial() {
+  Promise.all([ call('list_abteilungen'), call('list_fixkosten') ]).then(function(res) {
+    STATE.abteilungen = (res[0] && res[0].data) || [];
+    STATE.fixkosten = (res[1] && res[1].data) || [];
+    STATE.abteilungen.sort(function(a,b){ return (a.sortierung||0) - (b.sortierung||0); });
+    fillFixkostenSelect();
+  }).catch(function(e){ console.error(e); });
+}
+
+function fillFixkostenSelect() {
+  var sel = document.getElementById('targetFixkosten');
+  var manuelle = STATE.fixkosten.filter(function(f){ return f.umlage_methode === 'manuell'; });
+  if (!manuelle.length) {
+    sel.innerHTML = '<option value="">Keine manuelle Fixkosten-Position vorhanden — erst in Kostenschlüssel anlegen</option>';
+    return;
+  }
+  sel.innerHTML = manuelle.map(function(f){ return '<option value="' + f.id + '">' + f.name + ' (€' + f.betrag_monatlich + '/Monat)</option>'; }).join('');
+}
+
+// ── CSV PARSING ───────────────────────────────────────
+function detectDelimiter(text) {
+  var firstLine = text.split(/\r?\n/)[0] || '';
+  var semi = (firstLine.match(/;/g) || []).length;
+  var comma = (firstLine.match(/,/g) || []).length;
+  return semi >= comma ? ';' : ',';
+}
+
+function parseCsv(text, delimiter) {
+  return text.split(/\r?\n/).filter(function(l){ return l.trim().length; }).map(function(line) {
+    return line.split(delimiter).map(function(cell){ return cell.trim().replace(/^"|"$/g, ''); });
+  });
+}
+
+function looksLikeTimestamp(v) {
+  return /\d{1,4}[.\-\/]\d{1,2}[.\-\/]\d{1,4}/.test(v) || /\d{1,2}:\d{2}/.test(v);
+}
+function looksLikeNumber(v) {
+  return /^-?\d+([.,]\d+)?$/.test(v.replace(/\s/g,''));
+}
+
+function parseTimestamp(v) {
+  v = v.trim();
+  var m;
+  // DD.MM.YYYY HH:MM(:SS)
+  m = v.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})[ T,]+(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if (m) return new Date(m[3], m[2]-1, m[1], m[4], m[5], m[6]||0);
+  // YYYY-MM-DD HH:MM(:SS)
+  m = v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})[T ](\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if (m) return new Date(m[1], m[2]-1, m[3], m[4], m[5], m[6]||0);
+  // DD/MM/YYYY HH:MM
+  m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})[ T,]+(\d{1,2}):(\d{2})/);
+  if (m) return new Date(m[3], m[2]-1, m[1], m[4], m[5]);
+  var d = new Date(v);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function parseValue(v, delimiter) {
+  v = v.trim();
+  if (delimiter === ';') v = v.replace(',', '.');
+  var n = parseFloat(v.replace(/[^\d.\-]/g,''));
+  return isNaN(n) ? null : n;
+}
+
+var CURRENT_DELIMITER = ',';
+
+function handleFile(file) {
+  if (!file) return;
+  document.getElementById('fileName').textContent = file.name;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var text = e.target.result;
+    CURRENT_DELIMITER = detectDelimiter(text);
+    STATE.rawRows = parseCsv(text, CURRENT_DELIMITER);
+    if (!STATE.rawRows.length) { alert('Datei scheint leer.'); return; }
+    setupColumnPickers();
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function setupColumnPickers() {
+  var rows = STATE.rawRows;
+  var colCount = rows[0].length;
+
+  // Kopfzeile automatisch erkennen: wenn Zeile 2 in einer Spalte eine Zahl hat, Zeile 1 evtl. eine Zahl nicht -> Header
+  var headerGuess = 1;
+  if (rows.length > 1) {
+    var allNumericRow0 = rows[0].every(function(c){ return looksLikeNumber(c) || looksLikeTimestamp(c); });
+    headerGuess = allNumericRow0 ? 0 : 1;
+  }
+  document.getElementById('colHeader').value = String(headerGuess);
+
+  var dataStartRow = headerGuess;
+  var sampleRow = rows[dataStartRow] || rows[0];
+
+  var tsGuess = 0, valGuess = colCount > 1 ? 1 : 0;
+  for (var i = 0; i < sampleRow.length; i++) {
+    if (looksLikeTimestamp(sampleRow[i])) { tsGuess = i; break; }
+  }
+  for (var j = 0; j < sampleRow.length; j++) {
+    if (j !== tsGuess && looksLikeNumber(sampleRow[j])) { valGuess = j; break; }
+  }
+
+  var tsSel = document.getElementById('colTimestamp'), valSel = document.getElementById('colValue');
+  tsSel.innerHTML = ''; valSel.innerHTML = '';
+  for (var c = 0; c < colCount; c++) {
+    tsSel.innerHTML += '<option value="' + c + '"' + (c===tsGuess?' selected':'') + '>Spalte ' + (c+1) + '</option>';
+    valSel.innerHTML += '<option value="' + c + '"' + (c===valGuess?' selected':'') + '>Spalte ' + (c+1) + '</option>';
+  }
+
+  renderPreview();
+  reprocess();
+}
+
+function renderPreview() {
+  var rows = STATE.rawRows.slice(0, 6);
+  var html = '<tr>' + rows[0].map(function(_, i){ return '<th>Spalte ' + (i+1) + '</th>'; }).join('') + '</tr>';
+  rows.forEach(function(r) { html += '<tr>' + r.map(function(c){ return '<td>' + c + '</td>'; }).join('') + '</tr>'; });
+  document.getElementById('previewTable').innerHTML = html;
+  document.getElementById('previewSection').style.display = '';
+}
+
+function reprocess() {
+  var tsCol = parseInt(document.getElementById('colTimestamp').value, 10);
+  var valCol = parseInt(document.getElementById('colValue').value, 10);
+  var hasHeader = document.getElementById('colHeader').value === '1';
+
+  var rows = STATE.rawRows.slice(hasHeader ? 1 : 0);
+  var readings = [];
+  var badRows = 0;
+  rows.forEach(function(r) {
+    var ts = parseTimestamp(r[tsCol] || '');
+    var val = parseValue(r[valCol] || '', CURRENT_DELIMITER);
+    if (ts && val != null) readings.push({ t: ts, v: val });
+    else badRows++;
+  });
+
+  document.getElementById('parseInfo').textContent = readings.length + ' Werte erkannt' + (badRows ? ', ' + badRows + ' Zeilen konnten nicht gelesen werden (evtl. falsche Spalte gewählt)' : '') + '.';
+
+  if (!readings.length) { document.getElementById('resultsSection').style.display = 'none'; return; }
+
+  readings.sort(function(a,b){ return a.t - b.t; });
+  var von = new Date(readings[0].t.getTime() - 24*3600*1000).toISOString();
+  var bis = readings[readings.length-1].t.toISOString();
+
+  call('list_zeiterfassung', { von: von, bis: bis }).then(function(res) {
+    STATE.zeiterfassung = (res && res.data) || [];
+    correlate(readings);
+  }).catch(function(e){ console.error(e); });
+}
+
+function correlate(readings) {
+  STATE.currentUnit = 'kWh';
+  var byAbt = {}; // abteilung_id -> summe kWh
+  STATE.abteilungen.forEach(function(a) { byAbt[a.id] = 0; });
+  var unzugeordnet = 0;
+
+  readings.forEach(function(r) {
+    var t = r.t.getTime();
+    var present = {}; // abteilung_id -> true
+    STATE.zeiterfassung.forEach(function(e) {
+      var kommen = new Date(e.kommen).getTime();
+      var gehen = e.gehen ? new Date(e.gehen).getTime() : Date.now();
+      if (t >= kommen && t <= gehen) present[e.abteilung_id] = true;
+    });
+    var presentIds = Object.keys(present);
+    if (!presentIds.length) { unzugeordnet += r.v; return; }
+
+    var sumWeight = 0;
+    presentIds.forEach(function(id) {
+      var a = STATE.abteilungen.find(function(x){return x.id===id;});
+      sumWeight += (a && a.stromgewicht != null) ? a.stromgewicht : 1;
+    });
+    presentIds.forEach(function(id) {
+      var a = STATE.abteilungen.find(function(x){return x.id===id;});
+      var w = (a && a.stromgewicht != null) ? a.stromgewicht : 1;
+      if (byAbt[id] == null) byAbt[id] = 0;
+      byAbt[id] += sumWeight > 0 ? r.v * (w / sumWeight) : 0;
+    });
+  });
+
+  STATE.lastResult = byAbt;
+  renderResults(readings.length, byAbt, unzugeordnet);
+}
+
+function renderResults(rowCount, byAbt, unzugeordnet) {
+  document.getElementById('resultsSection').style.display = '';
+  document.getElementById('kpiRows').textContent = rowCount;
+
+  var zugeordnetTotal = 0;
+  Object.keys(byAbt).forEach(function(id){ zugeordnetTotal += byAbt[id]; });
+
+  var einheit = STATE.currentUnit || 'kWh';
+  document.getElementById('kpiZugeordnet').textContent = zugeordnetTotal.toFixed(2) + ' ' + einheit;
+  document.getElementById('kpiUnzugeordnet').textContent = unzugeordnet.toFixed(2) + ' ' + einheit;
+
+  var maxVal = Math.max.apply(null, Object.values(byAbt).concat([0.01]));
+  var html = '';
+  STATE.abteilungen.forEach(function(a) {
+    var val = byAbt[a.id] || 0;
+    var pct = zugeordnetTotal > 0 ? (val / zugeordnetTotal * 100) : 0;
+    var barPct = Math.max(2, (val / maxVal) * 100);
+    html += '<div class="abt-bar-row">'
+      + '<div class="abt-bar-label"><div class="abt-bar-swatch" style="background:' + a.farbe + '"></div>' + a.name + '</div>'
+      + '<div class="abt-bar-track"><div class="abt-bar-fill" style="width:' + barPct + '%;background:' + a.farbe + '"></div></div>'
+      + '<div class="abt-bar-value">' + val.toFixed(2) + ' ' + einheit + ' · ' + pct.toFixed(1) + '%</div>'
+      + '</div>';
+  });
+  document.getElementById('abtBars').innerHTML = html;
+}
+
+function applyToKostenschluessel() {
+  var fkId = document.getElementById('targetFixkosten').value;
+  if (!fkId) { alert('Bitte zuerst eine Fixkosten-Position (manuell %) in Kostenschlüssel anlegen.'); return; }
+  if (!STATE.lastResult) { alert('Noch keine Berechnung vorhanden.'); return; }
+
+  var zugeordnetTotal = 0;
+  Object.keys(STATE.lastResult).forEach(function(id){ zugeordnetTotal += STATE.lastResult[id]; });
+  if (zugeordnetTotal <= 0) { alert('Keine zuordenbaren Werte vorhanden.'); return; }
+
+  var anteile = STATE.abteilungen.map(function(a) {
+    var val = STATE.lastResult[a.id] || 0;
+    return { abteilung_id: a.id, prozent: Math.round((val / zugeordnetTotal) * 10000) / 100 };
+  });
+
+  call('set_fixkosten_anteile', { fixkosten_id: fkId, anteile: anteile }).then(function(res) {
+    if (res.error) { alert('Fehler: ' + res.error); return; }
+    alert('Übernommen — die Prozentsätze wurden in der Kostenschlüssel-Position gespeichert.');
+  }).catch(function(e){ console.error(e); alert('Fehler beim Speichern.'); });
+}
+
+var savedPw = sessionStorage.getItem(PW_STORAGE_KEY);
+if (savedPw) {
+  STATE.pw = savedPw;
+  call('list_abteilungen').then(function(res) {
+    if (res.error) { sessionStorage.removeItem(PW_STORAGE_KEY); STATE.pw = null; showGate(); }
+    else { hideGate(); loadInitial(); }
+  }).catch(function(){ showGate(); });
+} else {
+  showGate();
+}
+</script>
+</body>
+</html>
