@@ -1,0 +1,430 @@
+<!-- build: 2026-07-17-1 -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kostenschlüssel — Profitcenter Riedel Classics</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg:        #0d0f14;
+    --surface:   #141820;
+    --surface2:  #1c2230;
+    --border:    #252d3d;
+    --accent:    #3b82f6;
+    --accent2:   #1d4ed8;
+    --green:     #22c55e;
+    --yellow:    #f59e0b;
+    --red:       #ef4444;
+    --text:      #e8eaf0;
+    --muted:     #6b7a99;
+    --mono:      'JetBrains Mono', monospace;
+    --sans:      'Inter', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; font-size: 14px; }
+
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 56px; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; letter-spacing: -0.3px; }
+  .logo-icon { width: 30px; height: 30px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .logo span { color: var(--muted); font-weight: 400; margin-left: 4px; }
+  .nav-link { font-size: 13px; color: var(--muted); text-decoration: none; padding: 7px 12px; border-radius: 8px; }
+  .nav-link:hover { background: var(--surface2); color: var(--text); }
+
+  .save-badge { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .save-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .save-dot.saving { background: var(--yellow); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  .main { max-width: 1100px; margin: 0 auto; padding: 24px; }
+  .page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .page-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .card-title { font-size: 13px; font-weight: 600; }
+  .card-hint { font-size: 11px; color: var(--muted); }
+
+  .btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; }
+  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--border); }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-danger { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  .fk-list { padding: 8px; }
+  .fk-row { display: grid; grid-template-columns: 1fr 110px 140px 90px auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 8px; }
+  .fk-row.header { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; font-weight: 600; }
+  .fk-row:not(.header):hover { background: var(--surface2); }
+  .fk-row input[type=text], .fk-row input[type=number] { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 8px; font-size: 13px; width: 100%; font-family: var(--sans); }
+  .fk-row input[type=number] { font-family: var(--mono); text-align: right; }
+  .fk-select { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 8px; font-size: 12px; width: 100%; }
+  .fk-methode-badge { font-size: 10px; padding: 3px 8px; border-radius: 6px; font-weight: 600; text-align: center; }
+  .badge-flaeche { background: rgba(59,130,246,0.15); color: var(--accent); }
+  .badge-stunden { background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge-manuell { background: rgba(245,158,11,0.15); color: var(--yellow); }
+
+  .add-row { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; align-items: center; }
+  .add-row input[type=text] { flex: 1; background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 8px 12px; font-size: 13px; }
+  .add-row input[type=number] { flex: 0 0 110px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 8px 12px; font-size: 13px; font-family: var(--mono); }
+  .add-row select { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 8px 12px; font-size: 13px; flex: 0 0 140px; }
+
+  .manuell-panel { background: var(--bg); border-top: 1px dashed var(--border); padding: 12px 16px; display: none; }
+  .manuell-panel.show { display: block; }
+  .manuell-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 12px; }
+  .manuell-row .abt-name { flex: 1; }
+  .manuell-row input { width: 70px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 5px 7px; font-size: 12px; font-family: var(--mono); text-align: right; }
+  .manuell-sum { font-size: 11px; color: var(--muted); margin-top: 8px; text-align: right; }
+  .manuell-sum.warn { color: var(--yellow); }
+
+  .summary-list { padding: 8px; }
+  .summary-row { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; }
+  .summary-row:hover { background: var(--surface2); }
+  .summary-swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .summary-name { flex: 1; font-size: 13px; font-weight: 600; }
+  .summary-breakdown { font-size: 11px; color: var(--muted); }
+  .summary-total { font-family: var(--mono); font-size: 15px; font-weight: 700; text-align: right; width: 120px; }
+
+  .kpi-total { background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(59,130,246,0.03)); border: 1px solid rgba(59,130,246,0.25); border-radius: 12px; padding: 18px 20px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+  .kpi-total-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .kpi-total-value { font-size: 26px; font-weight: 700; font-family: var(--mono); color: var(--accent); }
+
+  .empty-hint { padding: 24px; text-align: center; color: var(--muted); font-size: 13px; }
+
+  .gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 999; padding: 24px; }
+  .gate-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 32px 28px; max-width: 320px; width: 100%; text-align: center; }
+  .gate-icon { font-size: 40px; margin-bottom: 12px; }
+  .gate-title { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .gate-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+  .gate-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 12px 14px; font-size: 15px; margin-bottom: 12px; text-align: center; }
+  .gate-error { color: var(--red); font-size: 12px; margin-bottom: 10px; min-height: 16px; }
+  .gate-btn { width: 100%; padding: 12px; border-radius: 10px; border: none; background: var(--accent); color: white; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-icon">🔒</div>
+    <div class="gate-title">Chef-Zugang</div>
+    <div class="gate-sub">Kostenschlüssel ist passwortgeschützt</div>
+    <input type="password" class="gate-input" id="gatePw" placeholder="Passwort" onkeydown="if(event.key==='Enter')checkGate()">
+    <div class="gate-error" id="gateError"></div>
+    <button class="gate-btn" onclick="checkGate()">Entsperren</button>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="logo"><div class="logo-icon">🔐</div> SmartGate <span>/ Profitcenter · Riedel Classics</span></div>
+  <div style="display:flex;align-items:center;gap:16px">
+    <a class="nav-link" href="index.html">⚙️ Stammdaten</a>
+    <a class="nav-link" href="dashboard.html">📊 Dashboard</a>
+    <div class="save-badge"><div class="save-dot" id="saveDot"></div><span id="saveText">Gespeichert</span></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="page-title">Kostenschlüssel</div>
+  <div class="page-sub">Fixkosten erfassen und auf Abteilungen umlegen — Basis für den Profitcenter-Vergleich</div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">🧾 Fixkosten-Positionen</div>
+      <div class="card-hint">monatlich, netto</div>
+    </div>
+    <div class="fk-list" id="fkList"></div>
+    <div class="add-row">
+      <input type="text" id="newFkName" placeholder="z. B. Miete, Versicherung…">
+      <input type="number" step="10" id="newFkBetrag" placeholder="€/Monat">
+      <select id="newFkMethode">
+        <option value="flaeche">nach Fläche</option>
+        <option value="stunden">nach Stunden</option>
+        <option value="manuell">manuell %</option>
+      </select>
+      <button class="btn btn-primary" onclick="addFixkosten()">+ Anlegen</button>
+    </div>
+  </div>
+
+  <div class="kpi-total">
+    <div>
+      <div class="kpi-total-label">Personalkosten (aktueller Monat, aus Zeiterfassung) + Fixkosten gesamt</div>
+      <div class="kpi-total-value" id="kpiGesamt">€0</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">📋 Gesamtkosten je Abteilung</div>
+      <div class="card-hint">Personalkosten (Monat) + anteilige Fixkosten</div>
+    </div>
+    <div class="summary-list" id="summaryList"></div>
+  </div>
+</div>
+
+<script>
+var ADMIN_FN_URL = "https://ysqzdqazcgyuzdorauiq.supabase.co/functions/v1/sg-admin";
+var SUPABASE_ANON_KEY = "sb_publishable_v4kXJa0y-2EHsCFPqBFHfg_QvzKLnt2";
+var PW_STORAGE_KEY = "sg_admin_pw";
+
+var METHODE_LABEL = { flaeche: 'Fläche', stunden: 'Stunden', manuell: 'Manuell %' };
+var METHODE_BADGE = { flaeche: 'badge-flaeche', stunden: 'badge-stunden', manuell: 'badge-manuell' };
+
+var STATE = { abteilungen: [], mitarbeiter: [], fixkosten: [], anteile: [], zeiterfassungMonat: [], pw: null, openManuell: null };
+
+function call(action, payload) {
+  return fetch(ADMIN_FN_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
+    body: JSON.stringify({ password: STATE.pw, action: action, payload: payload || {} })
+  }).then(function(r) {
+    if (r.status === 401) { sessionStorage.removeItem(PW_STORAGE_KEY); showGate("Passwort abgelaufen, bitte erneut eingeben."); throw new Error("unauthorized"); }
+    return r.json();
+  });
+}
+
+function showGate(err) { document.getElementById('gate').style.display = 'flex'; document.getElementById('gateError').textContent = err || ''; }
+function hideGate() { document.getElementById('gate').style.display = 'none'; }
+
+function checkGate() {
+  var pw = document.getElementById('gatePw').value;
+  if (!pw) return;
+  STATE.pw = pw;
+  document.getElementById('gateError').textContent = '';
+  call('list_abteilungen').then(function(res) {
+    if (res.error) { showGate(res.error); STATE.pw = null; return; }
+    sessionStorage.setItem(PW_STORAGE_KEY, pw);
+    hideGate();
+    loadAll();
+  }).catch(function() {});
+}
+
+function setSaving(on) {
+  var dot = document.getElementById('saveDot'), txt = document.getElementById('saveText');
+  if (on) { dot.className = 'save-dot saving'; txt.textContent = 'Speichert…'; }
+  else { dot.className = 'save-dot'; txt.textContent = 'Gespeichert'; }
+}
+
+function monatsStart() { var d = new Date(); d.setDate(1); d.setHours(0,0,0,0); return d.toISOString(); }
+function hoursBetween(a, b) { return (new Date(b) - new Date(a)) / 3600000; }
+
+function loadAll() {
+  Promise.all([
+    call('list_abteilungen'),
+    call('list_mitarbeiter'),
+    call('list_fixkosten'),
+    call('list_fixkosten_anteile'),
+    call('list_zeiterfassung', { von: monatsStart() })
+  ]).then(function(res) {
+    STATE.abteilungen = (res[0] && res[0].data) || [];
+    STATE.mitarbeiter = (res[1] && res[1].data) || [];
+    STATE.fixkosten = (res[2] && res[2].data) || [];
+    STATE.anteile = (res[3] && res[3].data) || [];
+    STATE.zeiterfassungMonat = (res[4] && res[4].data) || [];
+    STATE.abteilungen.sort(function(a,b){ return (a.sortierung||0) - (b.sortierung||0); });
+    render();
+  }).catch(function(e){ console.error(e); });
+}
+
+function render() { renderFixkosten(); renderSummary(); }
+
+// ── FIXKOSTEN-LISTE ──────────────────────────────────
+function renderFixkosten() {
+  var list = document.getElementById('fkList');
+  var html = '<div class="fk-row header"><div>Position</div><div>€/Monat</div><div>Umlage</div><div></div><div></div></div>';
+  if (!STATE.fixkosten.length) { list.innerHTML = html + '<div class="empty-hint">Noch keine Fixkosten erfasst.</div>'; return; }
+
+  STATE.fixkosten.forEach(function(fk) {
+    html += '<div class="fk-row">'
+      + '<input type="text" value="' + fk.name.replace(/"/g,'&quot;') + '" onchange="updateFixkosten(\'' + fk.id + '\',{name:this.value})">'
+      + '<input type="number" step="10" value="' + fk.betrag_monatlich + '" onchange="updateFixkosten(\'' + fk.id + '\',{betrag_monatlich:parseFloat(this.value)||0})">'
+      + '<select class="fk-select" onchange="changeMethode(\'' + fk.id + '\',this.value)">'
+      +   '<option value="flaeche"' + (fk.umlage_methode==='flaeche'?' selected':'') + '>nach Fläche</option>'
+      +   '<option value="stunden"' + (fk.umlage_methode==='stunden'?' selected':'') + '>nach Stunden</option>'
+      +   '<option value="manuell"' + (fk.umlage_methode==='manuell'?' selected':'') + '>manuell %</option>'
+      + '</select>'
+      + '<span class="fk-methode-badge ' + METHODE_BADGE[fk.umlage_methode] + '">' + METHODE_LABEL[fk.umlage_methode] + '</span>'
+      + '<div style="display:flex;gap:6px">'
+      +   (fk.umlage_methode === 'manuell' ? '<button class="btn btn-ghost btn-sm" onclick="toggleManuellPanel(\'' + fk.id + '\')">Anteile</button>' : '')
+      +   '<button class="btn btn-danger btn-sm" onclick="deleteFixkosten(\'' + fk.id + '\')">Löschen</button>'
+      + '</div>'
+      + '</div>';
+    if (fk.umlage_methode === 'manuell') {
+      html += '<div class="manuell-panel' + (STATE.openManuell === fk.id ? ' show' : '') + '" id="manuell-' + fk.id + '">' + renderManuellPanel(fk) + '</div>';
+    }
+  });
+  list.innerHTML = html;
+}
+
+function renderManuellPanel(fk) {
+  var html = '';
+  var sum = 0;
+  STATE.abteilungen.forEach(function(a) {
+    var existing = STATE.anteile.find(function(x){return x.fixkosten_id===fk.id && x.abteilung_id===a.id;});
+    var val = existing ? existing.prozent : 0;
+    sum += val;
+    html += '<div class="manuell-row"><div class="abt-name">' + a.name + '</div><input type="number" step="1" value="' + val + '" data-abt="' + a.id + '" onchange="markManuellDirty(\'' + fk.id + '\')"> %</div>';
+  });
+  html += '<div class="manuell-sum" id="manuellSum-' + fk.id + '">Summe: ' + sum.toFixed(0) + ' % (sollte 100 % ergeben)</div>';
+  html += '<div style="text-align:right;margin-top:8px"><button class="btn btn-primary btn-sm" onclick="saveManuellAnteile(\'' + fk.id + '\')">Anteile speichern</button></div>';
+  return html;
+}
+
+function toggleManuellPanel(fkId) {
+  STATE.openManuell = STATE.openManuell === fkId ? null : fkId;
+  renderFixkosten();
+}
+
+function markManuellDirty(fkId) {
+  var panel = document.getElementById('manuell-' + fkId);
+  var inputs = panel.querySelectorAll('input');
+  var sum = 0;
+  inputs.forEach(function(i) { sum += parseFloat(i.value) || 0; });
+  var sumEl = document.getElementById('manuellSum-' + fkId);
+  sumEl.textContent = 'Summe: ' + sum.toFixed(0) + ' % (sollte 100 % ergeben)';
+  sumEl.className = 'manuell-sum' + (Math.abs(sum - 100) > 0.5 ? ' warn' : '');
+}
+
+function saveManuellAnteile(fkId) {
+  var panel = document.getElementById('manuell-' + fkId);
+  var inputs = panel.querySelectorAll('input');
+  var anteile = [];
+  inputs.forEach(function(i) { anteile.push({ abteilung_id: i.dataset.abt, prozent: parseFloat(i.value) || 0 }); });
+  setSaving(true);
+  call('set_fixkosten_anteile', { fixkosten_id: fkId, anteile: anteile }).then(function() {
+    loadAll(); setSaving(false);
+  }).catch(function(e){ console.error(e); setSaving(false); });
+}
+
+function addFixkosten() {
+  var nameEl = document.getElementById('newFkName'), betragEl = document.getElementById('newFkBetrag'), methEl = document.getElementById('newFkMethode');
+  var name = nameEl.value.trim();
+  var betrag = parseFloat(betragEl.value);
+  if (!name || !betrag) { alert('Bitte Name und Betrag angeben.'); return; }
+  setSaving(true);
+  call('add_fixkosten', { name: name, betrag_monatlich: betrag, umlage_methode: methEl.value }).then(function(res) {
+    if (res.error) { alert('Fehler: ' + res.error); setSaving(false); return; }
+    nameEl.value = ''; betragEl.value = '';
+    loadAll(); setSaving(false);
+  }).catch(function(e){ console.error(e); setSaving(false); });
+}
+
+function updateFixkosten(id, patch) {
+  setSaving(true);
+  call('update_fixkosten', { id: id, patch: patch }).then(function() {
+    var fk = STATE.fixkosten.find(function(x){return x.id===id;});
+    if (fk) for (var k in patch) fk[k] = patch[k];
+    setSaving(false); renderSummary();
+  }).catch(function(e){ console.error(e); setSaving(false); });
+}
+
+function changeMethode(id, methode) { updateFixkosten(id, { umlage_methode: methode }); setTimeout(loadAll, 200); }
+
+function deleteFixkosten(id) {
+  if (!confirm('Diese Fixkosten-Position wirklich löschen?')) return;
+  setSaving(true);
+  call('delete_fixkosten', { id: id }).then(function() { loadAll(); setSaving(false); }).catch(function(e){ console.error(e); setSaving(false); });
+}
+
+// ── UMLAGE-BERECHNUNG ────────────────────────────────
+function personalkostenJeAbteilung() {
+  var byAbt = {};
+  STATE.zeiterfassungMonat.forEach(function(e) {
+    if (!e.gehen) return;
+    var std = hoursBetween(e.kommen, e.gehen);
+    if (std <= 0 || std > 16) return;
+    var m = STATE.mitarbeiter.find(function(x){return x.id===e.mitarbeiter_id;});
+    var rate = (m && m.stundensatz) ? m.stundensatz : 0;
+    byAbt[e.abteilung_id] = (byAbt[e.abteilung_id] || 0) + std * rate;
+  });
+  return byAbt;
+}
+
+function stundenJeAbteilung() {
+  var byAbt = {};
+  STATE.zeiterfassungMonat.forEach(function(e) {
+    if (!e.gehen) return;
+    var std = hoursBetween(e.kommen, e.gehen);
+    if (std <= 0 || std > 16) return;
+    byAbt[e.abteilung_id] = (byAbt[e.abteilung_id] || 0) + std;
+  });
+  return byAbt;
+}
+
+function umlageJeAbteilung(fk, stundenByAbt) {
+  var result = {};
+  var aktive = STATE.abteilungen.filter(function(a){return a.aktiv;});
+
+  if (fk.umlage_methode === 'flaeche') {
+    var gesamtFlaeche = aktive.reduce(function(s,a){ return s + (a.flaeche_qm||0); }, 0);
+    aktive.forEach(function(a) {
+      result[a.id] = gesamtFlaeche > 0 ? fk.betrag_monatlich * ((a.flaeche_qm||0) / gesamtFlaeche) : 0;
+    });
+  } else if (fk.umlage_methode === 'stunden') {
+    var gesamtStunden = aktive.reduce(function(s,a){ return s + (stundenByAbt[a.id]||0); }, 0);
+    aktive.forEach(function(a) {
+      result[a.id] = gesamtStunden > 0 ? fk.betrag_monatlich * ((stundenByAbt[a.id]||0) / gesamtStunden) : 0;
+    });
+  } else if (fk.umlage_methode === 'manuell') {
+    aktive.forEach(function(a) {
+      var anteil = STATE.anteile.find(function(x){return x.fixkosten_id===fk.id && x.abteilung_id===a.id;});
+      result[a.id] = fk.betrag_monatlich * ((anteil ? anteil.prozent : 0) / 100);
+    });
+  }
+  return result;
+}
+
+function renderSummary() {
+  var personalByAbt = personalkostenJeAbteilung();
+  var stundenByAbt = stundenJeAbteilung();
+  var aktive = STATE.abteilungen.filter(function(a){return a.aktiv;});
+
+  var fixByAbt = {};
+  aktive.forEach(function(a){ fixByAbt[a.id] = 0; });
+
+  STATE.fixkosten.forEach(function(fk) {
+    var u = umlageJeAbteilung(fk, stundenByAbt);
+    aktive.forEach(function(a) { fixByAbt[a.id] += (u[a.id] || 0); });
+  });
+
+  var gesamtPersonal = 0, gesamtFix = 0;
+  aktive.forEach(function(a) { gesamtPersonal += (personalByAbt[a.id]||0); gesamtFix += fixByAbt[a.id]; });
+  document.getElementById('kpiGesamt').textContent = '€' + (gesamtPersonal + gesamtFix).toLocaleString('de-DE', {maximumFractionDigits:0});
+
+  var list = document.getElementById('summaryList');
+  if (!aktive.length) { list.innerHTML = '<div class="empty-hint">Keine aktiven Abteilungen.</div>'; return; }
+
+  var html = '';
+  aktive.forEach(function(a) {
+    var p = personalByAbt[a.id] || 0;
+    var f = fixByAbt[a.id] || 0;
+    html += '<div class="summary-row">'
+      + '<div class="summary-swatch" style="background:' + a.farbe + '"></div>'
+      + '<div class="summary-name">' + a.name + '</div>'
+      + '<div class="summary-breakdown">Personal €' + p.toLocaleString('de-DE',{maximumFractionDigits:0}) + ' + Fix €' + f.toLocaleString('de-DE',{maximumFractionDigits:0}) + '</div>'
+      + '<div class="summary-total">€' + (p+f).toLocaleString('de-DE',{maximumFractionDigits:0}) + '</div>'
+      + '</div>';
+  });
+  list.innerHTML = html;
+}
+
+var savedPw = sessionStorage.getItem(PW_STORAGE_KEY);
+if (savedPw) {
+  STATE.pw = savedPw;
+  call('list_abteilungen').then(function(res) {
+    if (res.error) { sessionStorage.removeItem(PW_STORAGE_KEY); STATE.pw = null; showGate(); }
+    else { hideGate(); loadAll(); }
+  }).catch(function(){ showGate(); });
+} else {
+  showGate();
+}
+</script>
+</body>
+</html>

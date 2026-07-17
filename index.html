@@ -1,4 +1,4 @@
-<!-- build: 2026-07-17-2 -->
+<!-- build: 2026-07-17-3 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -76,6 +76,7 @@
   .abt-count { font-size: 12px; color: var(--muted); font-family: var(--mono); }
   .abt-actions { display: flex; gap: 6px; }
   .abt-row.inactive { opacity: 0.4; }
+  .abt-flaeche input { width: 64px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 5px 7px; font-size: 11px; font-family: var(--mono); text-align: right; }
 
   .ma-list { padding: 8px; }
   .ma-row { display: grid; grid-template-columns: 32px 1fr 160px 100px 90px; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 8px; }
@@ -128,6 +129,7 @@
   <div class="logo"><div class="logo-icon">🔐</div> SmartGate <span>/ Profitcenter · Riedel Classics</span></div>
   <div style="display:flex;align-items:center;gap:16px">
     <a class="nav-link" href="dashboard.html">📊 Dashboard</a>
+    <a class="nav-link" href="kostenschluessel.html">🧮 Kostenschlüssel</a>
     <div class="save-badge"><div class="save-dot" id="saveDot"></div><span id="saveText">Gespeichert</span></div>
   </div>
 </div>
@@ -230,6 +232,7 @@ function renderAbteilungen() {
       + '<div class="abt-kuerzel">' + a.kuerzel + '</div>'
       + '<div class="abt-name">' + a.name + '</div>'
       + '<div class="abt-count">' + count + ' MA</div>'
+      + '<div class="abt-flaeche"><input type="number" step="1" value="' + (a.flaeche_qm!=null?a.flaeche_qm:'') + '" placeholder="m²" onchange="updateAbteilung(\'' + a.id + '\',{flaeche_qm:this.value?parseFloat(this.value):null})"></div>'
       + '<div class="abt-actions"><button class="btn btn-ghost btn-sm" onclick="toggleAbteilung(\'' + a.id + '\',' + !a.aktiv + ')">' + (a.aktiv ? 'Deaktivieren' : 'Aktivieren') + '</button></div>'
       + '</div>';
   });
@@ -281,6 +284,15 @@ function toggleAbteilung(id, newVal) {
     var a = STATE.abteilungen.find(function(x){return x.id===id;});
     if (a) a.aktiv = newVal;
     render(); setSaving(false);
+  }).catch(function(e){ console.error(e); setSaving(false); });
+}
+
+function updateAbteilung(id, patch) {
+  setSaving(true);
+  call('update_abteilung', { id: id, patch: patch }).then(function() {
+    var a = STATE.abteilungen.find(function(x){return x.id===id;});
+    if (a) for (var k in patch) a[k] = patch[k];
+    setSaving(false);
   }).catch(function(e){ console.error(e); setSaving(false); });
 }
 
