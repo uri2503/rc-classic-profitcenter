@@ -1,4 +1,4 @@
-<!-- build: 2026-07-17-8 -->
+<!-- build: 2026-07-17-9 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -354,6 +354,8 @@ function showAskConfirm(m) {
   document.getElementById('overlay').className = 'overlay show';
 }
 
+var CHECKIN_FN_URL = "https://ysqzdqazcgyuzdorauiq.supabase.co/functions/v1/sg-checkin";
+
 function doBooking(maId) {
   var m = STATE.mitarbeiter.find(function(x){return x.id===maId;});
   if (!m) return;
@@ -361,25 +363,30 @@ function doBooking(maId) {
 
   if (offen) {
     // GEHEN
-    fetch(SUPABASE_URL + "/rest/v1/sg_zeiterfassung?id=eq." + offen.id, {
-      method: "PATCH", headers: sbHeaders(), body: JSON.stringify({ gehen: new Date().toISOString() })
-    }).then(function() {
-      delete STATE.offeneEintraege[maId];
-      localStorage.setItem(DEVICE_MA_KEY, maId);
-      showResult(m, false);
-      decideScreen();
-    }).catch(function(e){ console.error(e); alert('Fehler beim Ausloggen.'); });
+    fetch(CHECKIN_FN_URL, {
+      method: "POST", headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
+      body: JSON.stringify({ action: "checkout", payload: { id: offen.id, mitarbeiter_id: maId } })
+    }).then(function(r){ return r.json().then(function(d){ return { ok: r.ok, body: d }; }); })
+      .then(function(res) {
+        if (!res.ok || res.body.error) { alert('Fehler beim Auschecken: ' + (res.body.error || 'unbekannt')); return; }
+        delete STATE.offeneEintraege[maId];
+        localStorage.setItem(DEVICE_MA_KEY, maId);
+        showResult(m, false);
+        decideScreen();
+      }).catch(function(e){ console.error(e); alert('Fehler beim Auschecken (Netzwerk).'); });
   } else {
     // KOMMEN
-    fetch(SUPABASE_URL + "/rest/v1/sg_zeiterfassung", {
-      method: "POST", headers: sbHeaders({ "Prefer": "return=representation" }),
-      body: JSON.stringify({ mitarbeiter_id: maId, abteilung_id: m.abteilung_id, kommen: new Date().toISOString(), quelle: 'pwa' })
-    }).then(function(r){return r.json();}).then(function(d) {
-      if (d && d[0]) STATE.offeneEintraege[maId] = d[0];
-      localStorage.setItem(DEVICE_MA_KEY, maId);
-      showResult(m, true);
-      decideScreen();
-    }).catch(function(e){ console.error(e); alert('Fehler beim Einloggen.'); });
+    fetch(CHECKIN_FN_URL, {
+      method: "POST", headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
+      body: JSON.stringify({ action: "checkin", payload: { mitarbeiter_id: maId, abteilung_id: m.abteilung_id } })
+    }).then(function(r){ return r.json().then(function(d){ return { ok: r.ok, body: d }; }); })
+      .then(function(res) {
+        if (!res.ok || res.body.error) { alert('Fehler beim Einchecken: ' + (res.body.error || 'unbekannt')); return; }
+        if (res.body.data && res.body.data[0]) STATE.offeneEintraege[maId] = res.body.data[0];
+        localStorage.setItem(DEVICE_MA_KEY, maId);
+        showResult(m, true);
+        decideScreen();
+      }).catch(function(e){ console.error(e); alert('Fehler beim Einchecken (Netzwerk).'); });
   }
 }
 
