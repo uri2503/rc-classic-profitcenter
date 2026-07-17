@@ -1,4 +1,4 @@
-<!-- build: 2026-07-17-3 -->
+<!-- build: 2026-07-17-4 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -174,7 +174,7 @@ function call(action, payload) {
   });
 }
 
-function sbHeaders() { return { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY }; }
+function sbHeaders() { return { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY, "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" }; }
 
 function showGate(err) { document.getElementById('gate').style.display = 'flex'; document.getElementById('gateError').textContent = err || ''; }
 function hideGate() { document.getElementById('gate').style.display = 'none'; }
@@ -234,7 +234,7 @@ function loadZeiterfassung() {
 
 // Anwesenheit ist unkritisch (kein Stundensatz) -> direkt public lesbar, kein Passwort-Overhead noetig
 function loadAnwesend() {
-  fetch(SUPABASE_URL + "/rest/v1/sg_zeiterfassung?select=*&gehen=is.null", { headers: sbHeaders() })
+  fetch(SUPABASE_URL + "/rest/v1/sg_zeiterfassung?select=*&gehen=is.null&_=" + Date.now(), { headers: sbHeaders(), cache: "no-store" })
     .then(function(r){ return r.json(); })
     .then(function(data) { renderAnwesend(data || []); })
     .catch(function(e){ console.error(e); });

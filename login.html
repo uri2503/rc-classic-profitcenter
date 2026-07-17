@@ -1,4 +1,4 @@
-<!-- build: 2026-07-17-5 -->
+<!-- build: 2026-07-17-7 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -54,6 +54,16 @@
 
   .clock { text-align: center; font-family: var(--mono); font-size: 15px; color: var(--muted); margin-bottom: 20px; }
   .usage-hint { text-align: center; font-size: 13px; color: var(--accent); background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.25); border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; }
+
+  .recognized-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 36px 28px; text-align: center; margin-top: 20px; }
+  .recognized-avatar { width: 64px; height: 64px; border-radius: 50%; background: rgba(59,130,246,0.15); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; margin: 0 auto 16px; }
+  .recognized-name { font-size: 20px; font-weight: 700; margin-bottom: 2px; }
+  .recognized-abt { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+  .recognized-status { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+  .recognized-status.anwesend { color: var(--green); font-weight: 600; }
+  .recognized-btn { width: 100%; padding: 16px; border-radius: 14px; border: none; background: var(--accent); color: white; font-size: 16px; font-weight: 700; cursor: pointer; }
+  .recognized-btn.gehen { background: var(--yellow); color: #1a1400; }
+  .device-reset-link { margin-top: 18px; font-size: 12px; color: var(--muted); text-decoration: underline; cursor: pointer; }
 
   .search-box {
     width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text);
@@ -136,9 +146,23 @@
 
 <div class="main">
   <div class="clock" id="clock">--:--:--</div>
-  <div class="usage-hint">👉 Tippe deinen Namen an, um dich ein- oder auszuchecken.</div>
-  <input type="text" class="search-box" id="searchBox" placeholder="Name suchen…" oninput="renderList()">
-  <div class="ma-grid" id="maGrid"></div>
+
+  <div id="recognizedView" style="display:none">
+    <div class="recognized-card">
+      <div class="recognized-avatar" id="recAvatar">?</div>
+      <div class="recognized-name" id="recName">–</div>
+      <div class="recognized-abt" id="recAbt">–</div>
+      <div class="recognized-status" id="recStatus">–</div>
+      <button class="recognized-btn" id="recBtn" onclick="tapOwnCard()">–</button>
+      <div class="device-reset-link" onclick="resetDeviceIdentity()">Nicht du? Anderen Namen wählen</div>
+    </div>
+  </div>
+
+  <div id="listView">
+    <div class="usage-hint">👉 Tippe deinen Namen an, um dich ein- oder auszuchecken.</div>
+    <input type="text" class="search-box" id="searchBox" placeholder="Name suchen…" oninput="renderList()">
+    <div class="ma-grid" id="maGrid"></div>
+  </div>
 </div>
 
 <div class="overlay" id="overlay">
@@ -157,9 +181,10 @@ var SUPABASE_ANON_KEY = "sb_publishable_v4kXJa0y-2EHsCFPqBFHfg_QvzKLnt2";
 
 var STATE = { abteilungen: [], mitarbeiter: [], offeneEintraege: {}, gateOk: false };
 var GATE_SESSION_KEY = "sg_gate_ok";
+var DEVICE_MA_KEY = "sg_my_ma_id"; // localStorage: persistiert auf DIESEM Geraet, ueberlebt App-Neustart
 
 function sbHeaders(extra) {
-  var h = { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY, "Content-Type": "application/json" };
+  var h = { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY, "Content-Type": "application/json", "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" };
   if (extra) for (var k in extra) h[k] = extra[k];
   return h;
 }
@@ -184,7 +209,7 @@ function checkGateAccess() {
   var g = params.get('g');
   if (!g) { showQrGate(); return; }
 
-  fetch(SUPABASE_URL + "/rest/v1/sg_settings?select=gate_token&id=eq.1", { headers: sbHeaders() })
+  fetch(SUPABASE_URL + "/rest/v1/sg_settings?select=gate_token&id=eq.1&_=" + Date.now(), { headers: sbHeaders(), cache: "no-store" })
     .then(function(r){ return r.json(); })
     .then(function(rows) {
       var current = rows && rows[0] && rows[0].gate_token;
@@ -214,19 +239,68 @@ setInterval(updateClock, 1000);
 
 function loadAll() {
   Promise.all([
-    fetch(SUPABASE_URL + "/rest/v1/sg_abteilungen?select=*&aktiv=eq.true", { headers: sbHeaders() }).then(function(r){return r.json();}),
-    fetch(SUPABASE_URL + "/rest/v1/sg_mitarbeiter_public?select=*&aktiv=eq.true&order=name.asc", { headers: sbHeaders() }).then(function(r){return r.json();}),
-    fetch(SUPABASE_URL + "/rest/v1/sg_zeiterfassung?select=*&gehen=is.null", { headers: sbHeaders() }).then(function(r){return r.json();})
+    fetch(SUPABASE_URL + "/rest/v1/sg_abteilungen?select=*&aktiv=eq.true&_=" + Date.now(), { headers: sbHeaders(), cache: "no-store" }).then(function(r){return r.json();}),
+    fetch(SUPABASE_URL + "/rest/v1/sg_mitarbeiter_public?select=*&aktiv=eq.true&order=name.asc&_=" + Date.now(), { headers: sbHeaders(), cache: "no-store" }).then(function(r){return r.json();}),
+    fetch(SUPABASE_URL + "/rest/v1/sg_zeiterfassung?select=*&gehen=is.null&_=" + Date.now(), { headers: sbHeaders(), cache: "no-store" }).then(function(r){return r.json();})
   ]).then(function(res) {
     STATE.abteilungen = res[0] || [];
     STATE.mitarbeiter = res[1] || [];
     STATE.offeneEintraege = {};
     (res[2] || []).forEach(function(e) { STATE.offeneEintraege[e.mitarbeiter_id] = e; });
-    renderList();
+    decideScreen();
   }).catch(function(e) {
     console.error('Ladefehler:', e);
     document.getElementById('maGrid').innerHTML = '<div class="empty-hint">Fehler beim Laden. Bitte Seite neu laden.</div>';
   });
+}
+
+function decideScreen() {
+  var myId = localStorage.getItem(DEVICE_MA_KEY);
+  var m = myId ? STATE.mitarbeiter.find(function(x){return x.id===myId;}) : null;
+  if (m) { renderRecognized(m); } else { showListView(); renderList(); }
+}
+
+function showListView() {
+  document.getElementById('recognizedView').style.display = 'none';
+  document.getElementById('listView').style.display = '';
+}
+
+function renderRecognized(m) {
+  document.getElementById('listView').style.display = 'none';
+  var view = document.getElementById('recognizedView');
+  view.style.display = '';
+
+  var offen = STATE.offeneEintraege[m.id];
+  document.getElementById('recAvatar').textContent = initials(m.name);
+  document.getElementById('recName').textContent = m.name;
+  document.getElementById('recAbt').textContent = abtName(m.abteilung_id);
+
+  var statusEl = document.getElementById('recStatus');
+  var btnEl = document.getElementById('recBtn');
+  if (offen) {
+    statusEl.textContent = '● Anwesend seit ' + timeSince(offen.kommen);
+    statusEl.className = 'recognized-status anwesend';
+    btnEl.textContent = '👋 Jetzt auschecken';
+    btnEl.className = 'recognized-btn gehen';
+  } else {
+    statusEl.textContent = 'Aktuell nicht eingecheckt';
+    statusEl.className = 'recognized-status';
+    btnEl.textContent = '✅ Jetzt einchecken';
+    btnEl.className = 'recognized-btn';
+  }
+}
+
+function tapOwnCard() {
+  var myId = localStorage.getItem(DEVICE_MA_KEY);
+  var m = myId ? STATE.mitarbeiter.find(function(x){return x.id===myId;}) : null;
+  if (m) showAskConfirm(m);
+}
+
+function resetDeviceIdentity() {
+  if (!confirm('Dieses Gerät einem anderen Namen zuordnen?')) return;
+  localStorage.removeItem(DEVICE_MA_KEY);
+  showListView();
+  renderList();
 }
 
 function abtName(id) {
@@ -291,8 +365,9 @@ function doBooking(maId) {
       method: "PATCH", headers: sbHeaders(), body: JSON.stringify({ gehen: new Date().toISOString() })
     }).then(function() {
       delete STATE.offeneEintraege[maId];
+      localStorage.setItem(DEVICE_MA_KEY, maId);
       showResult(m, false);
-      renderList();
+      decideScreen();
     }).catch(function(e){ console.error(e); alert('Fehler beim Ausloggen.'); });
   } else {
     // KOMMEN
@@ -301,8 +376,9 @@ function doBooking(maId) {
       body: JSON.stringify({ mitarbeiter_id: maId, abteilung_id: m.abteilung_id, kommen: new Date().toISOString(), quelle: 'pwa' })
     }).then(function(r){return r.json();}).then(function(d) {
       if (d && d[0]) STATE.offeneEintraege[maId] = d[0];
+      localStorage.setItem(DEVICE_MA_KEY, maId);
       showResult(m, true);
-      renderList();
+      decideScreen();
     }).catch(function(e){ console.error(e); alert('Fehler beim Einloggen.'); });
   }
 }
