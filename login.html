@@ -1,4 +1,4 @@
-<!-- build: 2026-07-17-3 -->
+<!-- build: 2026-07-17-5 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -53,6 +53,7 @@
   .main { max-width: 480px; margin: 0 auto; padding: 20px; }
 
   .clock { text-align: center; font-family: var(--mono); font-size: 15px; color: var(--muted); margin-bottom: 20px; }
+  .usage-hint { text-align: center; font-size: 13px; color: var(--accent); background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.25); border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; }
 
   .search-box {
     width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text);
@@ -101,6 +102,10 @@
   .confirm-time { font-family: var(--mono); font-size: 24px; margin: 16px 0; color: var(--accent); }
   .confirm-card.gehen .confirm-time { color: var(--yellow); }
   .confirm-close { margin-top: 8px; padding: 10px 24px; border-radius: 10px; border: none; background: var(--surface2); color: var(--text); font-size: 13px; font-weight: 500; cursor: pointer; }
+  .confirm-yes { margin-top: 8px; margin-left: 10px; padding: 10px 24px; border-radius: 10px; border: none; background: var(--accent); color: white; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .confirm-card.gehen .confirm-yes { background: var(--yellow); color: #1a1400; }
+  .confirm-card.ask .confirm-title { color: var(--text); }
+  .confirm-hint { font-size: 12px; color: var(--muted); line-height: 1.5; margin: 10px 0 4px; }
 
   /* QR-GATE SPERRBILDSCHIRM */
   .qrgate { position: fixed; inset: 0; background: var(--bg); display: none; align-items: center; justify-content: center; z-index: 998; padding: 24px; }
@@ -131,6 +136,7 @@
 
 <div class="main">
   <div class="clock" id="clock">--:--:--</div>
+  <div class="usage-hint">👉 Tippe deinen Namen an, um dich ein- oder auszuchecken.</div>
   <input type="text" class="search-box" id="searchBox" placeholder="Name suchen…" oninput="renderList()">
   <div class="ma-grid" id="maGrid"></div>
 </div>
@@ -141,7 +147,7 @@
     <div class="confirm-title" id="confirmTitle">Eingecheckt</div>
     <div class="confirm-sub" id="confirmSub"></div>
     <div class="confirm-time" id="confirmTime"></div>
-    <button class="confirm-close" onclick="closeOverlay()">Schließen</button>
+    <div id="confirmActions"><button class="confirm-close" onclick="closeOverlay()">Schließen</button></div>
   </div>
 </div>
 
@@ -257,6 +263,26 @@ function renderList() {
 function handleTap(maId) {
   var m = STATE.mitarbeiter.find(function(x){return x.id===maId;});
   if (!m) return;
+  showAskConfirm(m);
+}
+
+function showAskConfirm(m) {
+  var offen = STATE.offeneEintraege[m.id];
+  var card = document.getElementById('confirmCard');
+  card.className = 'confirm-card ask' + (offen ? ' gehen' : '');
+  document.getElementById('confirmIcon').textContent = offen ? '👋' : '✅';
+  document.getElementById('confirmTitle').textContent = 'Bist du sicher?';
+  document.getElementById('confirmSub').textContent = m.name + ' · ' + abtName(m.abteilung_id);
+  document.getElementById('confirmTime').textContent = offen ? 'Jetzt auschecken' : 'Jetzt einchecken';
+  document.getElementById('confirmActions').innerHTML =
+    '<button class="confirm-close" onclick="closeOverlay()">Abbrechen</button>'
+    + '<button class="confirm-yes" onclick="doBooking(\'' + m.id + '\')">Ja, ' + (offen ? 'auschecken' : 'einchecken') + '</button>';
+  document.getElementById('overlay').className = 'overlay show';
+}
+
+function doBooking(maId) {
+  var m = STATE.mitarbeiter.find(function(x){return x.id===maId;});
+  if (!m) return;
   var offen = STATE.offeneEintraege[maId];
 
   if (offen) {
@@ -265,7 +291,7 @@ function handleTap(maId) {
       method: "PATCH", headers: sbHeaders(), body: JSON.stringify({ gehen: new Date().toISOString() })
     }).then(function() {
       delete STATE.offeneEintraege[maId];
-      showConfirm(m, false);
+      showResult(m, false);
       renderList();
     }).catch(function(e){ console.error(e); alert('Fehler beim Ausloggen.'); });
   } else {
@@ -275,21 +301,22 @@ function handleTap(maId) {
       body: JSON.stringify({ mitarbeiter_id: maId, abteilung_id: m.abteilung_id, kommen: new Date().toISOString(), quelle: 'pwa' })
     }).then(function(r){return r.json();}).then(function(d) {
       if (d && d[0]) STATE.offeneEintraege[maId] = d[0];
-      showConfirm(m, true);
+      showResult(m, true);
       renderList();
     }).catch(function(e){ console.error(e); alert('Fehler beim Einloggen.'); });
   }
 }
 
-function showConfirm(m, isKommen) {
+function showResult(m, isKommen) {
   var card = document.getElementById('confirmCard');
   card.className = 'confirm-card' + (isKommen ? '' : ' gehen');
   document.getElementById('confirmIcon').textContent = isKommen ? '✅' : '👋';
-  document.getElementById('confirmTitle').textContent = isKommen ? 'Eingecheckt' : 'Ausgecheckt';
+  document.getElementById('confirmTitle').textContent = isKommen ? 'Eingecheckt' : 'Ausgecheckt — schönen Feierabend!';
   document.getElementById('confirmSub').textContent = m.name + ' · ' + abtName(m.abteilung_id);
   document.getElementById('confirmTime').textContent = new Date().toLocaleTimeString('de-DE');
+  var hint = isKommen ? 'Du kannst diese Seite jetzt schließen. Zum Auschecken später einfach nochmal deinen Namen antippen.' : 'Du kannst diese Seite jetzt schließen.';
+  document.getElementById('confirmActions').innerHTML = '<div class="confirm-hint">' + hint + '</div><button class="confirm-close" onclick="closeOverlay()">Fertig</button>';
   document.getElementById('overlay').className = 'overlay show';
-  setTimeout(closeOverlay, 2500);
 }
 
 function closeOverlay() {
