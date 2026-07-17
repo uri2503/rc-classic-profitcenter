@@ -1,4 +1,4 @@
-<!-- build: 2026-07-18-1 -->
+<!-- build: 2026-07-18-2 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -49,6 +49,7 @@
   .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
   .btn-sm { padding: 6px 12px; font-size: 12px; }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .mode-tab.active { background: rgba(59,130,246,0.15); color: var(--accent); border-color: rgba(59,130,246,0.3); }
 
   .file-drop { border: 2px dashed var(--border); border-radius: 10px; padding: 28px; text-align: center; cursor: pointer; }
   .file-drop:hover { border-color: var(--accent); }
@@ -125,7 +126,12 @@
   <div class="page-title">Stromverbrauch-Zuordnung</div>
   <div class="page-sub">Minutengenaue Verbrauchsdaten importieren und anhand Anwesenheit + Abteilungsgewicht auf Abteilungen verteilen</div>
 
-  <div class="card">
+  <div class="mode-tabs" style="display:flex;gap:4px;margin-bottom:16px">
+    <button class="btn btn-ghost btn-sm mode-tab active" id="tabCsv" onclick="setMode('csv')">📂 CSV-Import</button>
+    <button class="btn btn-ghost btn-sm mode-tab" id="tabManuell" onclick="setMode('manuell')">✍️ Manuell (Tageswerte)</button>
+  </div>
+
+  <div class="card" id="csvCard">
     <div class="card-header"><div class="card-title">📂 CSV-Datei importieren</div></div>
     <div class="card-body">
       <div class="file-drop" onclick="document.getElementById('fileInput').click()">
@@ -155,6 +161,26 @@
         </div>
         <div class="info-hint" id="parseInfo"></div>
       </div>
+    </div>
+  </div>
+
+  <div class="card" id="manuellCard" style="display:none">
+    <div class="card-header"><div class="card-title">✍️ Tageswerte manuell eintragen</div></div>
+    <div class="card-body">
+      <div class="info-hint">Trag die Werte ein, die du in deiner Stromanbieter-App siehst (z. B. Tagesansicht "Kosten" oder "Netzbezug"). Die Verteilung erfolgt dann auf Tagesbasis: je Tag wird geschaut, welche Abteilungen wie lange anwesend waren, gewichtet mit dem Stromgewicht.</div>
+      <table class="preview-table" id="manuellTable" style="margin-top:12px">
+        <tr><th>Datum</th><th>kWh oder €</th><th></th></tr>
+      </table>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <input type="date" id="manDate" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 10px;font-size:13px">
+        <input type="number" step="0.01" id="manValue" placeholder="Wert" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 10px;font-size:13px;width:110px">
+        <select id="manUnit" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 10px;font-size:13px">
+          <option value="kWh">kWh</option>
+          <option value="€">€</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="addManualRow()">+ Hinzufügen</button>
+      </div>
+      <div style="margin-top:14px"><button class="btn btn-ghost btn-sm" onclick="processManual()">Berechnen</button></div>
     </div>
   </div>
 
@@ -197,7 +223,93 @@ var ADMIN_FN_URL = "https://ysqzdqazcgyuzdorauiq.supabase.co/functions/v1/sg-adm
 var SUPABASE_ANON_KEY = "sb_publishable_v4kXJa0y-2EHsCFPqBFHfg_QvzKLnt2";
 var PW_STORAGE_KEY = "sg_admin_pw";
 
-var STATE = { abteilungen: [], zeiterfassung: [], pw: null, rawRows: [], fixkosten: [] };
+var STATE = { abteilungen: [], zeiterfassung: [], pw: null, rawRows: [], fixkosten: [], manuellRows: [] };
+
+function setMode(mode) {
+  document.getElementById('csvCard').style.display = mode === 'csv' ? '' : 'none';
+  document.getElementById('manuellCard').style.display = mode === 'manuell' ? '' : 'none';
+  document.getElementById('tabCsv').className = 'btn btn-ghost btn-sm mode-tab' + (mode === 'csv' ? ' active' : '');
+  document.getElementById('tabManuell').className = 'btn btn-ghost btn-sm mode-tab' + (mode === 'manuell' ? ' active' : '');
+}
+
+function addManualRow() {
+  var dateEl = document.getElementById('manDate'), valEl = document.getElementById('manValue'), unitEl = document.getElementById('manUnit');
+  if (!dateEl.value || !valEl.value) { alert('Bitte Datum und Wert angeben.'); return; }
+  STATE.currentUnit = unitEl.value;
+  STATE.manuellRows.push({ date: dateEl.value, value: parseFloat(valEl.value) });
+  dateEl.value = ''; valEl.value = '';
+  renderManuellTable();
+}
+
+function removeManualRow(idx) {
+  STATE.manuellRows.splice(idx, 1);
+  renderManuellTable();
+}
+
+function renderManuellTable() {
+  var html = '<tr><th>Datum</th><th>kWh oder €</th><th></th></tr>';
+  STATE.manuellRows.forEach(function(row, i) {
+    html += '<tr><td>' + row.date + '</td><td>' + row.value + '</td><td><span style="color:var(--red);cursor:pointer" onclick="removeManualRow(' + i + ')">✕</span></td></tr>';
+  });
+  document.getElementById('manuellTable').innerHTML = html;
+}
+
+function processManual() {
+  if (!STATE.manuellRows.length) { alert('Bitte mindestens einen Tageswert eintragen.'); return; }
+  var dates = STATE.manuellRows.map(function(r){ return r.date; }).sort();
+  var von = new Date(dates[0] + 'T00:00:00'); von.setDate(von.getDate() - 1);
+  var bis = new Date(dates[dates.length-1] + 'T23:59:59'); bis.setDate(bis.getDate() + 1);
+
+  call('list_zeiterfassung', { von: von.toISOString(), bis: bis.toISOString() }).then(function(res) {
+    STATE.zeiterfassung = (res && res.data) || [];
+    correlateDaily();
+  }).catch(function(e){ console.error(e); });
+}
+
+function stundenUeberlappung(kommen, gehen, tagStart, tagEnde) {
+  var start = Math.max(kommen, tagStart);
+  var end = Math.min(gehen, tagEnde);
+  return end > start ? (end - start) / 3600000 : 0;
+}
+
+function correlateDaily() {
+  var byAbt = {};
+  STATE.abteilungen.forEach(function(a) { byAbt[a.id] = 0; });
+  var unzugeordnet = 0;
+
+  STATE.manuellRows.forEach(function(row) {
+    var tagStart = new Date(row.date + 'T00:00:00').getTime();
+    var tagEnde = new Date(row.date + 'T23:59:59').getTime();
+
+    var stundenJeAbt = {};
+    STATE.zeiterfassung.forEach(function(e) {
+      var kommen = new Date(e.kommen).getTime();
+      var gehen = e.gehen ? new Date(e.gehen).getTime() : Date.now();
+      var std = stundenUeberlappung(kommen, gehen, tagStart, tagEnde);
+      if (std > 0) stundenJeAbt[e.abteilung_id] = (stundenJeAbt[e.abteilung_id] || 0) + std;
+    });
+
+    var sumGewichtetStunden = 0;
+    Object.keys(stundenJeAbt).forEach(function(id) {
+      var a = STATE.abteilungen.find(function(x){return x.id===id;});
+      var w = (a && a.stromgewicht != null) ? a.stromgewicht : 1;
+      sumGewichtetStunden += stundenJeAbt[id] * w;
+    });
+
+    if (sumGewichtetStunden <= 0) { unzugeordnet += row.value; return; }
+
+    Object.keys(stundenJeAbt).forEach(function(id) {
+      var a = STATE.abteilungen.find(function(x){return x.id===id;});
+      var w = (a && a.stromgewicht != null) ? a.stromgewicht : 1;
+      var anteil = (stundenJeAbt[id] * w) / sumGewichtetStunden;
+      if (byAbt[id] == null) byAbt[id] = 0;
+      byAbt[id] += row.value * anteil;
+    });
+  });
+
+  STATE.lastResult = byAbt;
+  renderResults(STATE.manuellRows.length, byAbt, unzugeordnet);
+}
 
 function call(action, payload) {
   return fetch(ADMIN_FN_URL, {
@@ -377,6 +489,7 @@ function reprocess() {
 }
 
 function correlate(readings) {
+  STATE.currentUnit = 'kWh';
   var byAbt = {}; // abteilung_id -> summe kWh
   STATE.abteilungen.forEach(function(a) { byAbt[a.id] = 0; });
   var unzugeordnet = 0;
@@ -416,8 +529,9 @@ function renderResults(rowCount, byAbt, unzugeordnet) {
   var zugeordnetTotal = 0;
   Object.keys(byAbt).forEach(function(id){ zugeordnetTotal += byAbt[id]; });
 
-  document.getElementById('kpiZugeordnet').textContent = zugeordnetTotal.toFixed(1) + ' kWh';
-  document.getElementById('kpiUnzugeordnet').textContent = unzugeordnet.toFixed(1) + ' kWh';
+  var einheit = STATE.currentUnit || 'kWh';
+  document.getElementById('kpiZugeordnet').textContent = zugeordnetTotal.toFixed(2) + ' ' + einheit;
+  document.getElementById('kpiUnzugeordnet').textContent = unzugeordnet.toFixed(2) + ' ' + einheit;
 
   var maxVal = Math.max.apply(null, Object.values(byAbt).concat([0.01]));
   var html = '';
@@ -428,7 +542,7 @@ function renderResults(rowCount, byAbt, unzugeordnet) {
     html += '<div class="abt-bar-row">'
       + '<div class="abt-bar-label"><div class="abt-bar-swatch" style="background:' + a.farbe + '"></div>' + a.name + '</div>'
       + '<div class="abt-bar-track"><div class="abt-bar-fill" style="width:' + barPct + '%;background:' + a.farbe + '"></div></div>'
-      + '<div class="abt-bar-value">' + val.toFixed(1) + ' kWh · ' + pct.toFixed(1) + '%</div>'
+      + '<div class="abt-bar-value">' + val.toFixed(2) + ' ' + einheit + ' · ' + pct.toFixed(1) + '%</div>'
       + '</div>';
   });
   document.getElementById('abtBars').innerHTML = html;
