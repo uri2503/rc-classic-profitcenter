@@ -413,7 +413,7 @@ function parseTimestamp(v) {
 
 function parseValue(v, delimiter) {
   v = v.trim();
-  if (delimiter === ';') v = v.replace(',', '.');
+  if (delimiter === ';') v = v.replace(/\./g, '').replace(',', '.');
   var n = parseFloat(v.replace(/[^\d.\-]/g,''));
   return isNaN(n) ? null : n;
 }
